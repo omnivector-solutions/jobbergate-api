@@ -3,7 +3,6 @@
 
 
 
-## Endpoints
 
 Endpoint                | Method
 ----------------------- | -------------------
@@ -14,3 +13,9 @@ Endpoint                | Method
 `job-submissions/`      | GET
 `job-submissions/<pk>/` | GET, POST, UPDATE, DELETE
 
+
+### License
+* [MIT](LICENSE)
+
+### Copyright
+* Copyright (c) 2020 OmniVector Solutions <admin@omnivector.solutions>
