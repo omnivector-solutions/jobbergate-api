@@ -2,7 +2,7 @@
 Jobbergate API facilitates hadling web requests from the jobbergate-cli. The business logic for rendering and tracking job scripts, submitting and tracking jobs and registering applications is performaed here.
 
 
-
+## Endpoints and Methods
 
 Endpoint                | Method
 ----------------------- | -------------------
