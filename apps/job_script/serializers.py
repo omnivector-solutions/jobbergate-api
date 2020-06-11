@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.job_scripts.models import JobScript
+from apps.job_script.models import JobScript
 
 
 class JobScriptSerializer(serializers.ModelSerializer):

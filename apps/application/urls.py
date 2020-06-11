@@ -1,10 +1,10 @@
 from django.urls import path, include
 
-from apps.job_scripts import views
+from apps.application import views
 
 
 urlpatterns = [
-    # JobScriptListOrCreateView will return a list of all of the objects on GET
+    # ApplicationListOrCreateView will return a list of all of the objects on GET
     # and allow the creation of a job-script on POST.
     #
     # /job-scripts GET - Returns the list of job-scripts.
@@ -12,10 +12,10 @@ urlpatterns = [
     #
     path(
         '',
-        views.JobScriptListOrCreateView.as_view(),
+        views.ApplicationListOrCreateView.as_view(),
     ),
 
-    # JobScriptDetailView lets you perform CRUD operations on the 
+    # ApplicationDetailView lets you perform CRUD operations on the 
     # the object.
     #
     # /job-scripts/<pk>/ GET - Get details about a single job-script.
@@ -24,6 +24,6 @@ urlpatterns = [
     #                      
     path(
         '<int:pk>/',
-        views.JobScriptDetailView.as_view()
+        views.ApplicationDetailView.as_view()
     ),
 ]
