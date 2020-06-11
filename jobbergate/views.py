@@ -18,7 +18,7 @@ def ApplicationListView(request):
     return Response(test_response)
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def ApplicationCreateView(request):
     test_response = "Application Created"
     return Response(test_response)
