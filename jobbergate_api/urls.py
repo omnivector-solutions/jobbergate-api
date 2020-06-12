@@ -1,10 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
 
+
 from apps.job_scripts import urls as job_script_urls
 
 
+
 urlpatterns = [
+
     path(
         'admin/',
         admin.site.urls
