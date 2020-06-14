@@ -39,6 +39,16 @@ Following the install steps, run these commands to create and apply and migratio
 echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('bdx', 'bdx@bdx.com', 'bdx')" | ./manage.py shell
 ```
 
+#### Create database object using django shell
+```
+>>> from django.contrib.auth.models import User
+>>> from apps.applications.models import Application
+>>> u = User.objects.get()
+>>> a = Application(application_name="rat name", application_description="rat desc", application_location="rat location", application_owner=u)
+>>> a.save()
+```
+
+
 #### API Usage
 Run the api server locally:
 ```bash

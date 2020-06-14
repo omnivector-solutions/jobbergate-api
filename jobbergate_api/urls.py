@@ -15,8 +15,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 # from apps.job_submission import urls as job_submission_urls
 # from apps.application import urls as application_urls
 from apps.job_scripts import views as job_scripts_views
-from apps.job_submission import views as job_submission_views
-from apps.application import views as application_views
+from apps.job_submissions import views as job_submission_views
+from apps.applications import views as application_views
 
 
 urlpatterns = [
