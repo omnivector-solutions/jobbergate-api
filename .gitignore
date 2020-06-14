@@ -1,0 +1,10 @@
+.tox/
+venv/
+.serverless/
+*.sqlite3
+__pycache__/**
+**/__pycache__/**
+**/**/__pycache__/**
+.idea
+get-pip.py
+*.DS_Store
