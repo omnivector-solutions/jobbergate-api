@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 
-from apps.application.models import Application
-from apps.application.serializers import ApplicationSerializer
+from apps.applications.models import Application
+from apps.applications.serializers import ApplicationSerializer
 
 
 class ApplicationListOrCreateView(APIView):

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework import status
 
-from apps.job_submission.models import JobSubmission
-from apps.job_submission.serializers import JobSubmissionSerializer
+from apps.job_submissions.models import JobSubmission
+from apps.job_submissions.serializers import JobSubmissionSerializer
 
 
 class JobSubmissionListOrCreateView(APIView):

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.job_submission.models import JobSubmission
+from apps.job_submissions.models import JobSubmission
 
 
 class JobSubmissionSerializer(serializers.ModelSerializer):

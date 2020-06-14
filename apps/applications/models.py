@@ -1,0 +1,50 @@
+from django.db import models
+
+from django.contrib.auth.models import User
+
+
+class Application(models.Model):
+    """The application table is used to track information
+    about jobbergate applications.
+    """
+
+    application_name = models.CharField(
+        max_length=255,
+    )
+
+    application_description = models.CharField(
+        max_length=255,
+    )
+
+    application_location = models.CharField(
+        max_length=255,
+    )
+
+    application_dir_listing = models.TextField()
+
+    application_dir_listing_acquired = models.BooleanField(
+        default=True,
+    )
+
+    application_owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        editable=False,
+    )
+
+    class Meta:
+        verbose_name = 'application'
+        verbose_name_plural = 'applications'
+        db_table = 'applications'
+
+    def __str__(self):
+        return self.application_name

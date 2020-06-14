@@ -9,6 +9,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from rest_framework_jwt.views import obtain_jwt_token
+
 # from apps.job_scripts import urls as job_script_urls
 # from apps.job_submission import urls as job_submission_urls
 # from apps.application import urls as application_urls
@@ -30,4 +32,5 @@ urlpatterns = [
     #     'application/',
     #     include(application_urls),
     # ),
+    path('api-token-auth/', obtain_jwt_token),
 ]
