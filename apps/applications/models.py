@@ -23,7 +23,7 @@ class Application(models.Model):
     application_dir_listing = models.TextField()
 
     application_dir_listing_acquired = models.BooleanField(
-        default=True,
+        default=False,
     )
 
     application_owner = models.ForeignKey(
