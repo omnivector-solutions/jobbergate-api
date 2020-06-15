@@ -14,6 +14,7 @@ class Application(models.Model):
 
     application_description = models.CharField(
         max_length=255,
+        default=False,
     )
 
     application_location = models.CharField(

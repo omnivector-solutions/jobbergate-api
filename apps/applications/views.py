@@ -9,18 +9,9 @@ from apps.applications.models import Application
 from apps.applications.serializers import ApplicationSerializer
 
 
-class ApplicationView(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = ApplicationSerializer
-    queryset = Application.objects.all()
-
-    def post(self, request):
-        return Response({"some": "keyvalue"})
-
-
 class ApplicationListView(generics.ListCreateAPIView):
     """
-    list view for 'job-script/'
+    list view for 'application/'
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
@@ -33,7 +24,7 @@ class ApplicationListView(generics.ListCreateAPIView):
 
 class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     '''
-    detail view for 'job-script/<int:pk>'
+    detail view for 'application/<int:pk>'
     '''
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
