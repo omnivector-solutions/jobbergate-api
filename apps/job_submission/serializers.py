@@ -4,9 +4,6 @@ from apps.job_submission.models import JobSubmission
 
 
 class JobSubmissionSerializer(serializers.ModelSerializer):
-    #job_script_owner = serializers.HiddenField(
-    #    default=serializers.CurrentUserDefault()
-    #)
     class Meta:
         model = JobSubmission
         fields = ['id', 'job_submission_name', 'job_submission_owner']

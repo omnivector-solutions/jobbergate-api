@@ -1,53 +1,39 @@
-from rest_framework import permissions
+from rest_framework import mixins, viewsets, permissions
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
+from rest_framework import generics
+from rest_framework import status
 
 from apps.application.models import Application
 from apps.application.serializers import ApplicationSerializer
 
 
-class ApplicationListOrCreateView(APIView):
-    """
-    ApplicationListOrCreateView will return a list of all of the objects on GET
-    and allow the creation of a job-script on POST.
-    
-    /job-scripts GET - Returns the list of job-scripts.
-                 POST - Allows to create a job-script.
-    """
-
+class ApplicationView(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
 
-    def get(self, request):
-        # user = request.user
-        # application = Application.objects.get(user=user)
-        # serializer = ApplicationSerializer(data=application, many=True)
-        #
-        # print(serializer.__dict__)
-        # return Response(JSONRenderer().render(serializer.data))
-        pass
-
-
     def post(self, request):
-        pass
+        return Response({"some": "keyvalue"})
 
 
-class ApplicationDetailView(APIView):
-    """Job script get, post, update, delete operations.
-
-    * Requires token authentication.
-
-    endpoint: job-scripts/<pk>/
+class ApplicationListView(generics.ListCreateAPIView):
     """
+    list view for 'job-script/'
+    """
+    queryset = Application.objects.all()
+    serializer_class = ApplicationSerializer
 
-    def get(self, request):
-        pass
+    def delete(self, request, Application_pk, format=None):
+        application = Application.objects.get(id=Application_pk)
+        application.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def put(self, request):
-        pass
 
-    def delete(self, request):
-        pass
+class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
+    '''
+    detail view for 'job-script/<int:pk>'
+    '''
+    serializer_class = ApplicationSerializer
+    queryset = Application.objects.all()

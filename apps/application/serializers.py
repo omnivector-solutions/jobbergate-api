@@ -12,5 +12,5 @@ class ApplicationSerializer(serializers.ModelSerializer):
         fields = ['id', 'application_name', 'application_owner']
 
     def create(self, validated_data):
-        job_script = Application.objects.create(**validated_data)
-        return job_script
+        application = Application.objects.create(**validated_data)
+        return application
