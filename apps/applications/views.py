@@ -29,8 +29,8 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
 
-    def put(self, request, Application_pk, format=None):
-        application = Application.objects.get(id=Application_pk)
+    def put(self, request, pk, format=None):
+        application = Application.objects.get(id=pk)
         data = request.data
         serializer = ApplicationSerializer(instance=application, data=data)
         if serializer.is_valid():

@@ -27,3 +27,11 @@ class JobSubmissionView(generics.RetrieveUpdateDestroyAPIView):
     '''
     serializer_class = JobSubmissionSerializer
     queryset = JobSubmission.objects.all()
+
+    def put(self, request, pk, format=None):
+        jobsubmission = JobSubmission.objects.get(id=pk)
+        data = request.data
+        serializer = JobSubmissionSerializer(instance=jobsubmission, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)

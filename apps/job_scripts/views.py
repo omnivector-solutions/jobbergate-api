@@ -37,3 +37,11 @@ class JobScriptView(generics.RetrieveUpdateDestroyAPIView):
     '''
     serializer_class = JobScriptSerializer
     queryset = JobScript.objects.all()
+
+    def put(self, request, pk, format=None):
+        jobscript = JobScript.objects.get(id=pk)
+        data = request.data
+        serializer = JobScriptSerializer(instance=jobscript, data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
