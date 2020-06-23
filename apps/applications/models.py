@@ -14,13 +14,17 @@ class Application(models.Model):
 
     application_description = models.CharField(
         max_length=255,
+        default=False,
     )
 
     application_location = models.CharField(
         max_length=255,
+        default=False,
     )
 
-    application_dir_listing = models.TextField()
+    application_dir_listing = models.TextField(
+        default=False
+    )
 
     application_dir_listing_acquired = models.BooleanField(
         default=False,

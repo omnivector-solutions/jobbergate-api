@@ -4,12 +4,18 @@ from apps.job_scripts.models import JobScript
 
 
 class JobScriptSerializer(serializers.ModelSerializer):
-    #job_script_owner = serializers.HiddenField(
-    #    default=serializers.CurrentUserDefault()
-    #)
     class Meta:
         model = JobScript
-        fields = ['id', 'job_script_name', 'job_script_owner']
+        fields = [
+            'id',
+            'job_script_name',
+            'job_script_description',
+            'job_script_data_as_string',
+            'job_script_owner',
+            'application',
+            'created_at',
+            'updated_at'
+        ]
 
     def create(self, validated_data):
         print(validated_data)
