@@ -7,18 +7,18 @@ class ServerlessPlugin {
     this.serverless = serverless;
     this.options = options;
     this.commands = {
-      sentryDsn: {
-        usage: 'Returns the SENTRY_DSN',
-        lifecycleEvents: [
-          'sentryDsn'
-        ],
-      },
-      apiKey: {
-        usage: 'Returns the API_KEY',
-        lifecycleEvents: [
-          'apiKey',
-        ],
-      },
+      // sentryDsn: {
+      //   usage: 'Returns the SENTRY_DSN',
+      //   lifecycleEvents: [
+      //     'sentryDsn'
+      //   ],
+      // },
+      // apiKey: {
+      //   usage: 'Returns the API_KEY',
+      //   lifecycleEvents: [
+      //     'apiKey',
+      //   ],
+      // },
       syncToS3: {
         usage: 'Deploys the `build` directory to your bucket',
         lifecycleEvents: [
@@ -46,8 +46,8 @@ class ServerlessPlugin {
     };
 
     this.hooks = {
-      'sentryDsn:sentryDsn': this.sentryDsn.bind(this),
-      'apiKey:apiKey': this.apiKey.bind(this),
+      // 'sentryDsn:sentryDsn': this.sentryDsn.bind(this),
+      // 'apiKey:apiKey': this.apiKey.bind(this),
       'syncToS3:sync': this.syncDirectory.bind(this),
       'domainInfo:domainInfo': this.domainInfo.bind(this),
       's3DomainInfo:s3DomainInfo': this.s3DomainInfo.bind(this),
@@ -91,58 +91,58 @@ class ServerlessPlugin {
   }
 
   // fetches the SENTRY_DSN
-  async sentryDsn() {
-    const provider = this.serverless.getProvider('aws');
-    const stackName = provider.naming.getStackName(this.options.stage);
-    const result = await provider.request(
-      'CloudFormation',
-      'describeStacks',
-      { StackName: stackName },
-      this.options.stage,
-      this.options.region,
-    );
-
-    const outputs = result.Stacks[0].Outputs;
-    const output = outputs.find(
-      entry => entry.OutputKey === 'sentryDsn',
-    );
-
-    if (output && output.OutputValue) {
-      this.serverless.cli.log(`Web App Domain: ${output.OutputValue}`);
-      return output.OutputValue;
-    }
-
-    this.serverless.cli.log('SENTRY_DSN: Not Found');
-    const error = new Error('Could not extract SENTRY_DSN');
-    throw error;
-  }
+  // async sentryDsn() {
+  //   const provider = this.serverless.getProvider('aws');
+  //   const stackName = provider.naming.getStackName(this.options.stage);
+  //   const result = await provider.request(
+  //     'CloudFormation',
+  //     'describeStacks',
+  //     { StackName: stackName },
+  //     this.options.stage,
+  //     this.options.region,
+  //   );
+  //
+  //   const outputs = result.Stacks[0].Outputs;
+  //   const output = outputs.find(
+  //     entry => entry.OutputKey === 'sentryDsn',
+  //   );
+  //
+  //   if (output && output.OutputValue) {
+  //     this.serverless.cli.log(`Web App Domain: ${output.OutputValue}`);
+  //     return output.OutputValue;
+  //   }
+  //
+  //   this.serverless.cli.log('SENTRY_DSN: Not Found');
+  //   const error = new Error('Could not extract SENTRY_DSN');
+  //   throw error;
+  // }
 
   // fetches the API_KEY
-  async apiKey() {
-    const provider = this.serverless.getProvider('aws');
-    const stackName = provider.naming.getStackName(this.options.stage);
-    const result = await provider.request(
-      'CloudFormation',
-      'describeStacks',
-      { StackName: stackName },
-      this.options.stage,
-      this.options.region,
-    );
-
-    const outputs = result.Stacks[0].Outputs;
-    const output = outputs.find(
-      entry => entry.OutputKey === 'apiKey',
-    );
-
-    if (output && output.OutputValue) {
-      this.serverless.cli.log(`Web App Domain: ${output.OutputValue}`);
-      return output.OutputValue;
-    }
-
-    this.serverless.cli.log('API_KEY: Not Found');
-    const error = new Error('Could not extract API_KEY');
-    throw error;
-  }
+  // async apiKey() {
+  //   const provider = this.serverless.getProvider('aws');
+  //   const stackName = provider.naming.getStackName(this.options.stage);
+  //   const result = await provider.request(
+  //     'CloudFormation',
+  //     'describeStacks',
+  //     { StackName: stackName },
+  //     this.options.stage,
+  //     this.options.region,
+  //   );
+  //
+  //   const outputs = result.Stacks[0].Outputs;
+  //   const output = outputs.find(
+  //     entry => entry.OutputKey === 'apiKey',
+  //   );
+  //
+  //   if (output && output.OutputValue) {
+  //     this.serverless.cli.log(`Web App Domain: ${output.OutputValue}`);
+  //     return output.OutputValue;
+  //   }
+  //
+  //   this.serverless.cli.log('API_KEY: Not Found');
+  //   const error = new Error('Could not extract API_KEY');
+  //   throw error;
+  // }
 
   // fetches the domain name from the CloudFront outputs and prints it out
   async domainInfo() {

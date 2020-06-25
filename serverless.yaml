@@ -7,7 +7,6 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-python-requirements
   - serverless-plugin-resource-tagging
-
 provider:
   name: aws
   region: us-west-2
@@ -17,23 +16,26 @@ provider:
   stage: ${opt:stage, "staging"}
 
   stackTags:
-    Application: ${self:service}-${provier:stage}
+    Application: ${self:service}-staging
 
-  environment: ${file:./secrets/${self:provider.stage}.yaml}
+  environment: ${file(./secrets/${self:provider.stage}.yaml)}
 
   vpc:
-    secrityGroups:
-      - sg-
+    securityGroupIds:
+      - sg-cfac3d95
 
     subnets:
-      - subnet-
+      - subnet-02bc060304e2d7916
+      - subnet-0881906e33eb25bc0
+      - subnet-0a7b904695e55d8ed
+      - subnet-0d4605c10612b0cdb
 
-  resourcePolicy:
-    - Effect: Allow
-      Principal: '*'
-      Action: execute-api:Invoke
-      Resource:
-        - execute-api:/*/*/*
+#  resourcePolicy:
+#    - Effect: Allow
+#      Principal: '*'
+#      Action: execute-api:Invoke
+#      Resource:
+#        - execute-api:/*/*/*
 
   iamRoleStatements:
     -  Effect: "Allow"
@@ -51,21 +53,38 @@ custom:
   warmup:
     enabled: true
   pythonRequirements:
+    slim: true
+    zip: true
     dockerizePip: true
     layer: true
+    pythonBin: python3
+    fileName: requirements/requirements.txt
 
   s3Bucket: ${self:service}-${self:provider.stage}-assets
   s3LocalPath: static/
 
 
 functions:
-  jobbergate-api:
+  api:
     handler: wsgi_handler.handler
     layers:
       - { Ref: PythonRequirementsLambdaLayer }
 
     memorySize: 512
     timeout: 60
+#    events: # All events associated with this function
+#      - http:
+#          path: application/
+#          method: post
+#      - http:
+#          path: application/
+#          method: put
+#      - http:
+#          path: application/{id}
+#          method: delete
+#      - http:
+#          path: application/{id}
+#          method: get
 
 resources:
   Conditions:
@@ -89,10 +108,14 @@ resources:
         Subnets:  # IGW subnets for production, else security partner VPN
           !If
           - IsProd
-          - - <>
-            - <>
-          - - <>
-            - <>
+          - - subnet-0003408a6902f687c
+            - subnet-041383d708bea30f0
+            - subnet-0bb2a9d64b97da670
+            - subnet-0f882bf41d65b52c9
+          - - subnet-02bc060304e2d7916
+            - subnet-0881906e33eb25bc0
+            - subnet-0a7b904695e55d8ed
+            - subnet-0d4605c10612b0cdb
 
     APIHTTPListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -112,7 +135,7 @@ resources:
       Properties:
         LoadBalancerArn: !Ref APILoadBalancer
         Protocol: HTTPS
-        {Port: 443
+        Port: 443
         DefaultActions:
           - Type: forward
             TargetGroupArn: !Ref APITargetGroup
@@ -147,7 +170,7 @@ resources:
         Name: ${self:service}-${self:provider.stage}-tg
         TargetType: lambda
         Targets:
-          - Id: !GetAtt JobbergateApiLambdaFunction.Arn
+          - Id: !GetAtt ApiLambdaFunction.Arn
         TargetGroupAttributes:
           - Key: lambda.multi_value_headers.enabled
             Value: true
@@ -158,7 +181,7 @@ resources:
     APIInvokePermission:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: !GetAtt JobbergateApiLambdaFunction.Arn
+        FunctionName: !GetAtt ApiLambdaFunction.Arn
         Action: lambda:InvokeFunction
         Principal: elasticloadbalancing.amazonaws.com
 
@@ -206,9 +229,10 @@ resources:
         DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
         DBSubnetGroupDescription: Aurora SubnetGroup
         SubnetIds:
-          - <>
-          - <>
-          - <>
+          - subnet-02bc060304e2d7916
+          - subnet-0881906e33eb25bc0
+          - subnet-0a7b904695e55d8ed
+          - subnet-0d4605c10612b0cdb
 
     AuroraClusterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
@@ -230,8 +254,10 @@ resources:
         DBSubnetGroupName: !Ref AuroraClusterSubnetGroup
 
         #DBName: ${self:functions.api.environment.DATABASE_NAME}
-        MasterUsername: ${self:functions.api.environment.DATABASE_USER}
-        MasterUserPassword: ${self:functions.api.environment.DATABASE_PASS}
+#        MasterUsername: ${self:functions.api.environment.DATABASE_USER}
+#        MasterUserPassword: ${self:functions.api.environment.DATABASE_PASS}
+        MasterUsername: ${ssm:/jobbergate-api/staging/DATABASE_USER}
+        MasterUserPassword: ${ssm:/jobbergate-api/staging/DATABASE_PASS}
 
         VPCSecurityGroups:
           - !GetAtt AuroraClusterSecurityGroup.GroupId
@@ -257,9 +283,6 @@ resources:
 
     dbName:
       Value: ${self:provider.environment.DATABASE_NAME}
-
-    sentryDsn:
-      Value: ${self:provider.environment.SENTRY_DSN}
 
     assetsBucket:
       Value:
