@@ -10,6 +10,4 @@ get-pip.py
 *.DS_Store
 .requirements.zip
 node_modules/
-package-lock.json
-package.json
 
