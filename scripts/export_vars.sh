@@ -2,7 +2,7 @@
 
 set -e
 
-export IS_OFFLINE="rats"
+export LAMBDA_TASK_ROOT="rats"
 export DATABASE_NAME=`npx serverless dbName | awk '{print $3}'`
 export DATABASE_USER=`npx serverless dbUser | awk '{print $3}'`
 export DATABASE_PORT=`npx serverless dbPort | awk '{print $3}'`
