@@ -25,7 +25,6 @@ provider:
   vpc:
     securityGroupIds:
       - sg-cfac3d95
-
     subnets:
       - subnet-02bc060304e2d7916
       - subnet-0881906e33eb25bc0
@@ -85,19 +84,14 @@ functions:
 
     memorySize: 512
     timeout: 60
-#    events: # All events associated with this function
-#      - http:
-#          path: application/
-#          method: post
-#      - http:
-#          path: application/
-#          method: put
-#      - http:
-#          path: application/{id}
-#          method: delete
-#      - http:
-#          path: application/{id}
-#          method: get
+    vpc:
+      securityGroupIds:
+        - sg-cfac3d95
+      subnetIds:
+        - subnet-02bc060304e2d7916
+        - subnet-0881906e33eb25bc0
+        - subnet-0a7b904695e55d8ed
+        - subnet-0d4605c10612b0cdb
 
 resources:
   Conditions:
