@@ -13,7 +13,7 @@ provider:
   name: aws
   region: us-west-2
 
-  runtime: python3.6
+  runtime: python3.7
 
   stage: ${opt:stage, "staging"}
 

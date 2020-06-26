@@ -7,11 +7,11 @@
     "serverless-iam-roles-per-function": "^2.0.2",
     "serverless-plugin-resource-tagging": "^1.0.11",
     "serverless-plugin-warmup": "^4.9.0",
-    "serverless-python-requirements": "^5.1.0",
-    "serverless-wsgi": "^1.7.5"
+    "serverless-python-requirements": "^5.1.0"
   },
   "devDependencies": {
     "serverless-db-info-plugin": "file:./serverless-db-info-plugin",
-    "serverless-single-page-app-plugin": "file:./serverless-single-page-app-plugin"
+    "serverless-single-page-app-plugin": "file:./serverless-single-page-app-plugin",
+    "serverless-wsgi": "^1.7.5"
   }
 }
