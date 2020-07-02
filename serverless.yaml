@@ -300,3 +300,4 @@ resources:
     assetsDistribution:
       Value:
         'Fn::GetAtt': [ AssetsDistribution, DomainName ]
+
