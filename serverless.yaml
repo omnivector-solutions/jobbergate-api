@@ -49,7 +49,9 @@ provider:
              - ${self:service}-${self:provider.stage}-assets/*
 package:
   exclude:
-    #- node_modules/**
+    - node_modules/**
+    - 'node_modules/**'
+    - '!node_modules/node-fetch/**'
     - .tox/**
     - .git/**
     - '*.swp'
@@ -58,6 +60,7 @@ package:
     - venv/**
     - testenv/**
     - static/**
+    - media/**
 
 custom:
   wsgi:
