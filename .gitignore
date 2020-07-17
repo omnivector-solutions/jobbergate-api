@@ -10,4 +10,4 @@ get-pip.py
 *.DS_Store
 .requirements.zip
 node_modules/
-
+media/
