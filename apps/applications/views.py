@@ -23,8 +23,8 @@ class ApplicationListView(generics.ListCreateAPIView):
     serializer_class = ApplicationSerializer
     bucket = boto3.resource('s3').Bucket('omnivector-misc')
 
-    def delete(self, request, Application_pk, format=None):
-        application = Application.objects.get(id=Application_pk)
+    def delete(self, request, pk, format=None):
+        application = Application.objects.get(id=pk)
         application.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
