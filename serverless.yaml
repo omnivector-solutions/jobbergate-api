@@ -50,8 +50,7 @@ provider:
 package:
   exclude:
     - node_modules/**
-    - 'node_modules/**'
-    - '!node_modules/node-fetch/**'
+    - .serverless/**
     - .tox/**
     - .git/**
     - '*.swp'
