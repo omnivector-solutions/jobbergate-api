@@ -21,6 +21,4 @@ class JobSubmissionSerializer(serializers.ModelSerializer):
         print(validated_data['job_script'])
         job_script_id = validated_data['job_script'].id
         print(job_script_id)
-        # job_script =
-        # application_id =
         return job_submission
