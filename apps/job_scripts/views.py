@@ -8,9 +8,6 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
 from jinja2 import Template
 
 import boto3
@@ -39,32 +36,20 @@ class JobScriptListView(generics.ListCreateAPIView):
         param_dict = ast.literal_eval(dict_str)
 
         application = Application.objects.get(id=data['application'])
-        print(application.application_location)
-
-        print(param_dict)
         obj = self.bucket.Object(application.application_location)
         buf = io.BytesIO(obj.get()["Body"].read())  # reads whole gz file into memory
         tar = tarfile.open(fileobj=buf)
         # use "tar" as a regular TarFile object
         for member in tar.getmembers():
-            print(member.name)
             if ".j2" in member.name:
                 contentfobj = tar.extractfile(member)
                 template_file = contentfobj.read().decode("utf-8")
-
-            # f = tar.extractfile(member)
-            # print(f.)
-
 
         template = Template(template_file)
 
         # TODO Identify this file not hard code once working
         rendered_js = template.render(param_dict=param_dict)
-        print(f"type rendered_js {type(rendered_js)}")
         data['job_script_data_as_string'] = rendered_js
-        # outfile = open(os.path.join(application_path, f"{application_name}.sh"), "w")
-        # outfile.write(rendered_js)
-        # outfile.close()
 
         serializer = JobScriptSerializer(data=data)
 
