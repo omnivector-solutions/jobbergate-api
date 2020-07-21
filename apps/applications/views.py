@@ -21,7 +21,8 @@ class ApplicationListView(generics.ListCreateAPIView):
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
-    bucket = boto3.resource('s3').Bucket('omnivector-misc')
+    client = boto3.client('s3')
+    #TODO once working - populate dynamic
 
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
@@ -37,10 +38,13 @@ class ApplicationListView(generics.ListCreateAPIView):
 
         filename = data['application_location'].split("/")[-1]
 
-        path = default_storage.save(filename, ContentFile(tar_file.read()))
-        self.bucket.upload_file(
-            os.path.join(settings.MEDIA_ROOT, path),
-            data['application_location'])
+        print(f"Uploading to {data['application_location']}")
+
+        #TODO need to load bucket name dynamic
+        self.client.put_object(
+            Body=tar_file,
+            Bucket='jobbbergate-api-staging-resources',
+            Key=data['application_location'])
 
         serializer = ApplicationSerializer(data=data)
 

@@ -18,7 +18,7 @@ provider:
   stage: ${opt:stage, "staging"}
 
   stackTags:
-    Application: ${self:service}-staging
+    Application: ${self:service}-${self:provider.stage}
 
   environment: ${file(./secrets/${self:provider.stage}.yaml)}
 
@@ -50,6 +50,7 @@ provider:
 package:
   exclude:
     - node_modules/**
+    - '!node_modules/node-fetch/**'
     - .serverless/**
     - .tox/**
     - .git/**
@@ -75,6 +76,7 @@ custom:
     fileName: requirements/requirements.txt
 
   s3Bucket: ${self:service}-${self:provider.stage}-assets
+  s3ResourcesBucket: ${self:service}-${self:provider.stage}-resources
   s3LocalPath: static/
 
 
@@ -212,7 +214,28 @@ resources:
               Principal: "*"
               Action:
               - s3:GetObject
+              - s3:PutObject
               Resource: arn:aws:s3:::${self:custom.s3Bucket}/*
+
+    ResourcesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3ResourcesBucket}
+
+    ResourcessBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: ResourcesBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PutGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: arn:aws:s3:::${self:custom.s3ResourcesBucket}/*
 
     AssetsDistribution:
       Type: AWS::CloudFront::Distribution
