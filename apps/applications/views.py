@@ -1,13 +1,9 @@
-import os
-
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.conf import settings
+from jobbergate_api.settings import S3_BUCKET
 
 import boto3
 
@@ -43,7 +39,7 @@ class ApplicationListView(generics.ListCreateAPIView):
         #TODO need to load bucket name dynamic
         self.client.put_object(
             Body=tar_file,
-            Bucket='jobbbergate-api-staging-resources',
+            Bucket=S3_BUCKET,
             Key=data['application_location'])
 
         serializer = ApplicationSerializer(data=data)

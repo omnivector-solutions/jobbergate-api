@@ -1,5 +1,3 @@
-import os
-import json
 import ast
 import io
 
@@ -8,6 +6,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
+from jobbergate_api.settings import S3_BUCKET
 from jinja2 import Template
 
 import boto3
@@ -24,7 +23,7 @@ class JobScriptListView(generics.ListCreateAPIView):
     """
     queryset = JobScript.objects.all()
     serializer_class = JobScriptSerializer
-    bucket = boto3.resource('s3').Bucket('omnivector-misc')
+    client = boto3.client('s3')
 
     def post(self, request, format=None):
         data = request.data
@@ -36,10 +35,13 @@ class JobScriptListView(generics.ListCreateAPIView):
         param_dict = ast.literal_eval(dict_str)
 
         application = Application.objects.get(id=data['application'])
-        obj = self.bucket.Object(application.application_location)
-        buf = io.BytesIO(obj.get()["Body"].read())  # reads whole gz file into memory
+        obj = self.client.get_object(
+            Bucket=S3_BUCKET,
+            Key=application.application_location
+
+        )
+        buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
-        # use "tar" as a regular TarFile object
         for member in tar.getmembers():
             if ".j2" in member.name:
                 contentfobj = tar.extractfile(member)
