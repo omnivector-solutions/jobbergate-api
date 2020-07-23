@@ -7,18 +7,6 @@ class ServerlessPlugin {
     this.serverless = serverless;
     this.options = options;
     this.commands = {
-      accountsRedis: {
-        usage: 'Fetches and prints out the accounts redis fqdn',
-        lifecycleEvents: [
-          'accountsRedis',
-        ],
-      },
-       optoutsRedis: {
-        usage: 'Fetches and prints out the optouts redis fqdn',
-        lifecycleEvents: [
-          'optoutsRedis',
-        ],
-      },
       dbUri: {
         usage: 'Fetches and prints out the dbUri',
         lifecycleEvents: [
@@ -59,68 +47,12 @@ class ServerlessPlugin {
 
     this.hooks = {
       'dbUri:dbUri': this.dbUri.bind(this),
-      'accountsRedis:accountsRedis': this.accountsRedis.bind(this),
-      'optoutsRedis:optoutsRedis': this.optoutsRedis.bind(this),
       'dbHost:dbHost': this.dbHost.bind(this),
       'dbPort:dbPort': this.dbPort.bind(this),
       'dbUser:dbUser': this.dbUser.bind(this),
       'dbPass:dbPass': this.dbPass.bind(this),
       'dbName:dbName': this.dbName.bind(this),
     };
-  }
-
-  // fetches the accountsRedis FQDN
-  async accountsRedis() {
-    const provider = this.serverless.getProvider('aws');
-    const stackName = provider.naming.getStackName(this.options.stage);
-    const result = await provider.request(
-      'CloudFormation',
-      'describeStacks',
-      { StackName: stackName },
-      this.options.stage,
-      this.options.region,
-    );
-
-    const outputs = result.Stacks[0].Outputs;
-    const output = outputs.find(
-      entry => entry.OutputKey === 'accountsRedis',
-    );
-
-    if (output && output.OutputValue) {
-      this.serverless.cli.log(`accountsRedis: ${output.OutputValue}`);
-      return output.OutputValue;
-    }
-
-    this.serverless.cli.log('accountsRedis Not Found');
-    const error = new Error('Could not extract accountsRedis');
-    throw error;
-  }
-
-  // fetches the optoutsRedis
-  async optoutsRedis() {
-    const provider = this.serverless.getProvider('aws');
-    const stackName = provider.naming.getStackName(this.options.stage);
-    const result = await provider.request(
-      'CloudFormation',
-      'describeStacks',
-      { StackName: stackName },
-      this.options.stage,
-      this.options.region,
-    );
-
-    const outputs = result.Stacks[0].Outputs;
-    const output = outputs.find(
-      entry => entry.OutputKey === 'optoutsRedis',
-    );
-
-    if (output && output.OutputValue) {
-      this.serverless.cli.log(`optoutsRedis: ${output.OutputValue}`);
-      return output.OutputValue;
-    }
-
-    this.serverless.cli.log('optoutsRedis Not Found');
-    const error = new Error('Could not extract optoutsRedis');
-    throw error;
   }
 
   // fetches the db-uri

@@ -39,8 +39,6 @@ class ApplicationListView(generics.ListCreateAPIView):
             user_id = serializer.data['application_owner']
             application_id = serializer.data['id']
             application_name = serializer.data['application_name']
-            print(f"data 1: {serializer.data}")
-
             self.client.put_object(
                 Body=tar_file,
                 Bucket=S3_BUCKET,
