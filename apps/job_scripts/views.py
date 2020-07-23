@@ -33,11 +33,16 @@ class JobScriptListView(generics.ListCreateAPIView):
         param_file = data['upload_file'].read()
         dict_str = param_file.decode("UTF-8")
         param_dict = ast.literal_eval(dict_str)
+        application_id = data['application']
 
-        application = Application.objects.get(id=data['application'])
+        application = Application.objects.get(id=application_id)
+        s3_key = application.application_location.replace(
+            "application_id",
+            str(application_id)
+            )
         obj = self.client.get_object(
             Bucket=S3_BUCKET,
-            Key=application.application_location
+            Key=s3_key
 
         )
         buf = io.BytesIO(obj['Body'].read())
