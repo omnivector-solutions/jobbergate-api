@@ -1,0 +1,328 @@
+---
+service: jobbbergate-api
+
+plugins:
+  - serverless-wsgi
+  - serverless-plugin-warmup
+  - serverless-iam-roles-per-function
+  - serverless-python-requirements
+  - serverless-plugin-resource-tagging
+  - serverless-db-info-plugin
+  - serverless-single-page-app-plugin
+provider:
+  name: aws
+  region: us-west-2
+
+  runtime: python3.6
+
+  stage: ${opt:stage, "staging"}
+
+  stackTags:
+    Application: ${self:service}-${self:provider.stage}
+
+  environment: ${file(./secrets/${self:provider.stage}.yaml)}
+
+  vpc:
+    securityGroupIds:
+      - sg-cfac3d95
+    subnets:
+      - subnet-02bc060304e2d7916
+      - subnet-0881906e33eb25bc0
+      - subnet-0a7b904695e55d8ed
+      - subnet-0d4605c10612b0cdb
+
+#  resourcePolicy:
+#    - Effect: Allow
+#      Principal: '*'
+#      Action: execute-api:Invoke
+#      Resource:
+#        - execute-api:/*/*/*
+
+  iamRoleStatements:
+    -  Effect: "Allow"
+       Action:
+         - "s3:*"
+       Resource:
+         Fn::Join:
+           - ""
+           - - "arn:aws:s3:::"
+             - ${self:service}-${self:provider.stage}-assets/*
+package:
+  exclude:
+    - node_modules/**
+    - '!node_modules/node-fetch/**'
+    - .serverless/**
+    - .tox/**
+    - .git/**
+    - '*.swp'
+    - .gitignore
+    - env/**
+    - venv/**
+    - testenv/**
+    - static/**
+    - media/**
+
+custom:
+  wsgi:
+    app: jobbergate_api.wsgi.application
+  warmup:
+    enabled: true
+  pythonRequirements:
+    slim: true
+    zip: true
+    dockerizePip: true
+    layer: true
+    pythonBin: python3
+    fileName: requirements/requirements.txt
+
+  s3Bucket: ${self:service}-${self:provider.stage}-assets
+  s3ResourcesBucket: ${self:service}-${self:provider.stage}-resources
+  s3LocalPath: static/
+
+
+functions:
+  api:
+    handler: wsgi_handler.handler
+    layers:
+      - { Ref: PythonRequirementsLambdaLayer }
+
+    memorySize: 512
+    timeout: 60
+    vpc:
+      securityGroupIds:
+        - sg-cfac3d95
+      subnetIds:
+        - subnet-02bc060304e2d7916
+        - subnet-0881906e33eb25bc0
+        - subnet-0a7b904695e55d8ed
+        - subnet-0d4605c10612b0cdb
+
+resources:
+  Conditions:
+    # The production-tmp exception is to allow a/b deployments
+    # to production after making major breaking changes.
+    IsProd: !Or
+      - !Equals ["${self:provider.stage}", production]
+      - !Equals ["${self:provider.stage}", production-tmp]
+
+  Resources:
+    APILoadBalancer:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-alb
+        SecurityGroups: ${self:provider.vpc.securityGroupIds}
+        Scheme:
+          !If
+          - IsProd
+          - internet-facing
+          - internal
+        Subnets:  # IGW subnets for production, else security partner VPN
+          !If
+          - IsProd
+          - - subnet-0003408a6902f687c
+            - subnet-041383d708bea30f0
+            - subnet-0bb2a9d64b97da670
+            - subnet-0f882bf41d65b52c9
+          - - subnet-02bc060304e2d7916
+            - subnet-0881906e33eb25bc0
+            - subnet-0a7b904695e55d8ed
+            - subnet-0d4605c10612b0cdb
+
+    APIHTTPListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        LoadBalancerArn: !Ref APILoadBalancer
+        Protocol: HTTP
+        Port: 80
+        DefaultActions:
+          - Type: redirect
+            RedirectConfig:
+              Protocol: HTTPS
+              Port: 443
+              StatusCode: HTTP_301
+
+    APIHTTPSListener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        LoadBalancerArn: !Ref APILoadBalancer
+        Protocol: HTTPS
+        Port: 443
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref APITargetGroup
+        Certificates:
+          - CertificateArn: !Ref APIHTTPSCert
+
+    APIRecordSet:
+      Type: AWS::Route53::RecordSet
+      Properties:
+        HostedZoneName: omnivector.solutions.
+        # NOTE: The production jobbergate-api.omnivector.solutions record is manually managed
+        Name: jobbergate-api-${self:provider.stage}.omnivector.solutions
+        Type: A
+        AliasTarget:
+          DNSName: !GetAtt APILoadBalancer.DNSName
+          HostedZoneId: !GetAtt APILoadBalancer.CanonicalHostedZoneID
+
+    # NOTE: For new certicates a manual verificiation step may be necessary to
+    # verify domain ownership. More info:
+    # https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html
+    APIHTTPSCert:
+      Type: AWS::CertificateManager::Certificate
+      Properties:
+        DomainName: !Ref APIRecordSet
+        ValidationMethod: DNS
+        SubjectAlternativeNames:
+          - jobbergate-api-${self:provider.stage}.omnivector.solutions
+
+    APITargetGroup:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: ${self:service}-${self:provider.stage}-tg
+        TargetType: lambda
+        Targets:
+          - Id: !GetAtt ApiLambdaFunction.Arn
+        TargetGroupAttributes:
+          - Key: lambda.multi_value_headers.enabled
+            Value: true
+        HealthCheckEnabled: true
+        HealthCheckIntervalSeconds: 300
+        HealthCheckPath: /healthcheck
+
+    APIInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !GetAtt ApiLambdaFunction.Arn
+        Action: lambda:InvokeFunction
+        Principal: elasticloadbalancing.amazonaws.com
+
+    AssetsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3Bucket}
+        AccessControl: PublicRead
+
+    AssetsBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: AssetsBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+              - s3:GetObject
+              - s3:PutObject
+              Resource: arn:aws:s3:::${self:custom.s3Bucket}/*
+
+    ResourcesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.s3ResourcesBucket}
+
+    ResourcessBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: ResourcesBucket
+        PolicyDocument:
+          Statement:
+            - Sid: PutGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: arn:aws:s3:::${self:custom.s3ResourcesBucket}/*
+
+    AssetsDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Origins:
+            - Id: Assets
+              DomainName: ${self:custom.s3Bucket}.s3.us-west-2.amazonaws.com
+              S3OriginConfig: {}
+          DefaultCacheBehavior:
+            TargetOriginId: Assets
+            DefaultTTL: 86400
+            MaxTTL: 31536000
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              QueryString: false
+              Headers: ['Origin']
+          Enabled: true
+
+    AuroraClusterSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
+        DBSubnetGroupDescription: Aurora SubnetGroup
+        SubnetIds:
+          - subnet-02bc060304e2d7916
+          - subnet-0881906e33eb25bc0
+          - subnet-0a7b904695e55d8ed
+          - subnet-0d4605c10612b0cdb
+
+    AuroraClusterSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: "Allow ingress from our vpc subnet cidrs on 5432."
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 5432
+            ToPort: 5432
+            CidrIp: 172.31.0.0/16
+
+    AuroraInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        Engine: postgres
+        AllocatedStorage: 20
+
+        DBInstanceClass: db.t2.micro
+        DBSubnetGroupName: !Ref AuroraClusterSubnetGroup
+
+        DBName: ${self:provider.environment.DATABASE_NAME}
+        MasterUsername: ${self:provider.environment.DATABASE_USER}
+        MasterUserPassword: ${self:provider.environment.DATABASE_PASS}
+
+        VPCSecurityGroups:
+          - !GetAtt AuroraClusterSecurityGroup.GroupId
+
+        BackupRetentionPeriod: 35
+        PubliclyAccessible: "false"
+
+  Outputs:
+    dbUri:
+      Value: ${self:provider.environment.DATABASE_URI}
+
+    dbHost:
+      Value: ${self:provider.environment.DATABASE_HOST}
+
+    dbPort:
+      Value: ${self:provider.environment.DATABASE_PORT}
+
+    dbPass:
+      Value: ${self:provider.environment.DATABASE_PASS}
+
+    dbUser:
+      Value: ${self:provider.environment.DATABASE_USER}
+
+    dbName:
+      Value: ${self:provider.environment.DATABASE_NAME}
+
+    assetsBucket:
+      Value:
+        'Ref': AssetsBucket
+
+    assetsBucketUrl:
+      Value:
+        'Fn::GetAtt': [ AssetsBucket, WebsiteURL ]
+
+    assetsDistribution:
+      Value:
+        'Fn::GetAtt': [ AssetsDistribution, DomainName ]
+

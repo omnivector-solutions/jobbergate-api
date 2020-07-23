@@ -1,0 +1,7 @@
+{
+  "name": "serverless-db-info-plugin",
+  "version": "1.0.0",
+  "description": "A plugin to simplify returning db info",
+  "author": "",
+  "license": "MIT"
+}

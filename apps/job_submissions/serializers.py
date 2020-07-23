@@ -17,5 +17,6 @@ class JobSubmissionSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        job_script = JobSubmission.objects.create(**validated_data)
-        return job_script
+        job_submission = JobSubmission.objects.create(**validated_data)
+        job_script_id = validated_data['job_script'].id
+        return job_submission

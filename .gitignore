@@ -2,9 +2,13 @@
 venv/
 .serverless/
 *.sqlite3
+starccm_app/
 __pycache__/**
 **/__pycache__/**
 **/**/__pycache__/**
 .idea
 get-pip.py
 *.DS_Store
+.requirements.zip
+node_modules/
+media/
