@@ -34,8 +34,13 @@ class ApplicationListView(generics.ListCreateAPIView):
             raise ParseError("Empty content")
         tar_file = data['upload_file']
 
-        serializer = ApplicationSerializer(data=data)
         application_uuid = str(uuid.uuid4())
+        user_id = data['application_name']
+
+        s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/application.tar.gz"
+        data['application_location'] = s3_key
+
+        serializer = ApplicationSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
@@ -45,12 +50,7 @@ class ApplicationListView(generics.ListCreateAPIView):
             self.client.put_object(
                 Body=tar_file,
                 Bucket=S3_BUCKET,
-                Key=(
-                    "jobbergate-resources/"
-                    f"{user_id}/"
-                    f"{application_uuid}/"
-                    "application.tar.gz"
-                )
+                Key=s3_key
             )
             return Response(serializer.data)
 

@@ -20,12 +20,13 @@ class JobSubmissionListView(generics.ListCreateAPIView):
         jobscript.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def post(self, request, job_submission_name, job_script_id):
-        serializer = JobSubmissionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, job_submission_name, job_script_id):
+    #     print("got to post")
+    #     serializer = JobSubmissionSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class JobSubmissionView(generics.RetrieveUpdateDestroyAPIView):
