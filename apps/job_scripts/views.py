@@ -37,13 +37,9 @@ class JobScriptListView(generics.ListCreateAPIView):
         application_id = data['application']
 
         application = Application.objects.get(id=application_id)
-        s3_key = application.application_location.replace(
-            "application_id",
-            str(application_id)
-            )
         obj = self.client.get_object(
             Bucket=S3_BUCKET,
-            Key=s3_key
+            Key=application.application_location
 
         )
         buf = io.BytesIO(obj['Body'].read())
