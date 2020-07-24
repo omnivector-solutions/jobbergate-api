@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
@@ -33,6 +35,7 @@ class ApplicationListView(generics.ListCreateAPIView):
         tar_file = data['upload_file']
 
         serializer = ApplicationSerializer(data=data)
+        application_uuid = str(uuid.uuid4())
 
         if serializer.is_valid():
             serializer.save()
@@ -45,8 +48,7 @@ class ApplicationListView(generics.ListCreateAPIView):
                 Key=(
                     "jobbergate-resources/"
                     f"{user_id}/"
-                    f"{application_name}/"
-                    f"{application_id}/"
+                    f"{application_uuid}/"
                     "application.tar.gz"
                 )
             )

@@ -18,6 +18,5 @@ class JobScriptSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        print(validated_data)
         job_script = JobScript.objects.create(**validated_data)
         return job_script

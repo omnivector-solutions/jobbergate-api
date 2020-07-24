@@ -1,5 +1,6 @@
 import ast
 import io
+import subprocess
 
 from rest_framework.response import Response
 from rest_framework import generics
@@ -48,14 +49,13 @@ class JobScriptListView(generics.ListCreateAPIView):
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
         for member in tar.getmembers():
-            if ".j2" in member.name:
+            if member.name == param_dict['default_template']:
                 contentfobj = tar.extractfile(member)
                 template_file = contentfobj.read().decode("utf-8")
 
         template = Template(template_file)
-
         # TODO Identify this file not hard code once working
-        rendered_js = template.render(param_dict=param_dict)
+        rendered_js = template.render(data=param_dict)
         data['job_script_data_as_string'] = rendered_js
 
         serializer = JobScriptSerializer(data=data)
