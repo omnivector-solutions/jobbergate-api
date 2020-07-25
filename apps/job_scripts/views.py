@@ -1,6 +1,5 @@
 import ast
 import io
-import subprocess
 
 from rest_framework.response import Response
 from rest_framework import generics
