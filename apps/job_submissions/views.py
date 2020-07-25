@@ -8,6 +8,7 @@ from rest_framework import status
 from apps.job_submissions.models import JobSubmission
 from apps.job_submissions.serializers import JobSubmissionSerializer
 
+
 class JobSubmissionListView(generics.ListCreateAPIView):
     """
     list view for 'job-submission/'
@@ -19,14 +20,6 @@ class JobSubmissionListView(generics.ListCreateAPIView):
         jobscript = JobSubmission.objects.get(id=JobSubmission_pk)
         jobscript.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # def post(self, request, job_submission_name, job_script_id):
-    #     print("got to post")
-    #     serializer = JobSubmissionSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class JobSubmissionView(generics.RetrieveUpdateDestroyAPIView):
