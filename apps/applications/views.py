@@ -35,7 +35,7 @@ class ApplicationListView(generics.ListCreateAPIView):
         tar_file = data['upload_file']
 
         application_uuid = str(uuid.uuid4())
-        user_id = data['application_name']
+        user_id = data['application_owner']
 
         s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/application.tar.gz"
         data['application_location'] = s3_key
@@ -44,9 +44,6 @@ class ApplicationListView(generics.ListCreateAPIView):
 
         if serializer.is_valid():
             serializer.save()
-            user_id = serializer.data['application_owner']
-            application_id = serializer.data['id']
-            application_name = serializer.data['application_name']
             self.client.put_object(
                 Body=tar_file,
                 Bucket=S3_BUCKET,
