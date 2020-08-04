@@ -1,6 +1,7 @@
 import ast
 import io
 import tempfile
+import json
 
 from django.http import FileResponse, HttpResponse
 from wsgiref.util import FileWrapper
@@ -49,13 +50,21 @@ class JobScriptListView(generics.ListCreateAPIView):
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
         print(param_dict['supporting_files'])
+        template_files = {}
 
         # existing functionality to render the job script
         # this is what is returned in the job_script_data_as_str field
         for member in tar.getmembers():
             if member.name == param_dict['default_template']:
                 contentfobj = tar.extractfile(member)
-                template_file = contentfobj.read().decode("utf-8")
+                template_files["application.sh"] = contentfobj.read().decode("utf-8")
+            if member.name in param_dict['supporting_files']:
+                contentfobj = tar.extractfile(member)
+                filename = param_dict['supporting_files_output_name'][member.name]
+                print(f"filename is {filename}")
+                template_files[filename] = contentfobj.read().decode("utf-8")
+                # template_file += "\nNEW_FILE\n"
+                # template_file += contentfobj.read().decode("utf-8")
         # in progress functionality to render all supporting files and
         # return them as a tar with the response
 
@@ -126,24 +135,22 @@ class JobScriptListView(generics.ListCreateAPIView):
         # tar_response = HttpResponse(content_type='application/x-gzip')
         # tar_response['Content-Disposition'] = f'attachment; filename={rendered_tar.name}'
 
-        template = Template(template_file)
-        # TODO Identify this file not hard code once working
-        rendered_js = template.render(data=param_dict)
+        for key, value in template_files.items():
+            template = Template(value)
+            # TODO Identify this file not hard code once working
+            rendered_js = template.render(data=param_dict)
+            template_files[key] = rendered_js
 
-        data['job_script_data_as_string'] = rendered_js
+
+        data['job_script_data_as_string'] = json.dumps(template_files)
+        print(data['job_script_data_as_string'])
 
         serializer = JobScriptSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
-            return tar_response
-            # except:
-            #     print("failed on Response(zip_response)")
-            #
-            # try:
-            #     return Response(serializer.data)
-            # except:
-            #     print("failed on Response(serializer.data)")
+            # return tar_response
+            return Response(serializer.data)
 
     def delete(self, request, JobScript_pk, format=None):
         jobscript = JobScript.objects.get(id=JobScript_pk)
