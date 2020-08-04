@@ -3,8 +3,7 @@ import io
 import tempfile
 import json
 
-from django.http import FileResponse, HttpResponse
-from wsgiref.util import FileWrapper
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
@@ -12,7 +11,6 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
 from jobbergate_api.settings import S3_BUCKET
 from jinja2 import Template
-from zipfile import ZipFile
 
 import boto3
 import tarfile
@@ -63,53 +61,8 @@ class JobScriptListView(generics.ListCreateAPIView):
                 filename = param_dict['supporting_files_output_name'][member.name]
                 print(f"filename is {filename}")
                 template_files[filename] = contentfobj.read().decode("utf-8")
-                # template_file += "\nNEW_FILE\n"
-                # template_file += contentfobj.read().decode("utf-8")
-        # in progress functionality to render all supporting files and
-        # return them as a tar with the response
 
-        # #try zip
-        # in_memory = io.BytesIO()
-        # zf = ZipFile(in_memory, mode="w")
-        #
-        # # If you have data in text format that you want to save into the zip as a file
-        # for member in tar.getmembers():
-        #     if member.name in param_dict['supporting_files']:
-        #         print(f"file is {member.name}")
-        #         contentfobj = tar.extractfile(member)
-        #         supporting_file = contentfobj.read().decode("utf-8")
-        #         # template = Environment(loader=BaseLoader).from_string(supporting_file)
-        #         template = Template(supporting_file)
-        #         rendered_str = template.render(data=param_dict)
-        #         zf.writestr(member.name, rendered_str)
-        #
-        # # Close the zip file
-        # # zf.close()
-        #
-        # # Go to beginning
-        # in_memory.seek(0)
-
-        # read the data
-
-        # try:
-        #     zip_response = FileResponse(open(zf, 'rb'))
-        # except:
-        #     print("failed on FileResponse(open(zf, 'rb'))")
-
-        # rendered_tar.close()
-        # print("filename")
-        # zf.filename = "test.zip"
-        # print(zf.filename)
-        #
-        # # generate the file
-        # file = open(zf, 'rb')
-        # zio_response = HttpResponse(FileWrapper(file), content_type='application/zip')
-        # zip_response['Content-Disposition'] = f"attachment; filename={zf.filename}"
-
-        # create tar file where rendered supporting files will be added
-        # tmp_file = io.BytesIO(bytearray())
-        # rendered_tar = tarfile.open(fileobj=tmp_file)
-
+        # Use tempfile to generate .tar in memory - NOT write to disk
         with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
             with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
                 for member in tar.getmembers():
@@ -117,13 +70,9 @@ class JobScriptListView(generics.ListCreateAPIView):
                         print(f"file is {member.name}")
                         contentfobj = tar.extractfile(member)
                         supporting_file = contentfobj.read().decode("utf-8")
-                        # template = Environment(loader=BaseLoader).from_string(supporting_file)
                         template = Template(supporting_file)
                         rendered_str = template.render(data=param_dict)
                         tarinfo = tarfile.TarInfo(member.name)
-                        # rendered_file = io.StringIO(rendered_str)
-                        # rendered_file.write(rendered_str)
-                        # rendered_file.close()
                         rendered_tar.addfile(tarinfo, io.StringIO(rendered_str))
             f.flush()
             f.seek(0)
@@ -131,9 +80,6 @@ class JobScriptListView(generics.ListCreateAPIView):
 
         tar_response = FileResponse(rendered_tar)
 
-
-        # tar_response = HttpResponse(content_type='application/x-gzip')
-        # tar_response['Content-Disposition'] = f'attachment; filename={rendered_tar.name}'
 
         for key, value in template_files.items():
             template = Template(value)
@@ -143,13 +89,11 @@ class JobScriptListView(generics.ListCreateAPIView):
 
 
         data['job_script_data_as_string'] = json.dumps(template_files)
-        print(data['job_script_data_as_string'])
 
         serializer = JobScriptSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
-            # return tar_response
             return Response(serializer.data)
 
     def delete(self, request, JobScript_pk, format=None):

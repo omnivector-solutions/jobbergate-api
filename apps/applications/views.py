@@ -20,7 +20,6 @@ class ApplicationListView(generics.ListCreateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     client = boto3.client('s3')
-    #TODO once working - populate dynamic
 
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
