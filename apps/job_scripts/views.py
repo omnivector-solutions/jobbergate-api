@@ -47,18 +47,17 @@ class JobScriptListView(generics.ListCreateAPIView):
         )
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
-        print(param_dict['supporting_files'])
         template_files = {}
 
         # existing functionality to render the job script
         # this is what is returned in the job_script_data_as_str field
         for member in tar.getmembers():
-            if member.name == param_dict['default_template']:
+            if member.name == param_dict['jobbergate_config']['default_template']:
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
-            if member.name in param_dict['supporting_files']:
+            if member.name in param_dict['jobbergate_config']['supporting_files']:
                 contentfobj = tar.extractfile(member)
-                filename = param_dict['supporting_files_output_name'][member.name]
+                filename = param_dict['jobbergate_config']['supporting_files_output_name'][member.name]
                 print(f"filename is {filename}")
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
@@ -66,7 +65,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
             with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
                 for member in tar.getmembers():
-                    if member.name in param_dict['supporting_files']:
+                    if member.name in param_dict['jobbergate_config']['supporting_files']:
                         print(f"file is {member.name}")
                         contentfobj = tar.extractfile(member)
                         supporting_file = contentfobj.read().decode("utf-8")
