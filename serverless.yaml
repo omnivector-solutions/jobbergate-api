@@ -212,17 +212,9 @@ resources:
           Statement:
             - Sid: PublicReadGetObject
               Effect: Allow
-              Principal:
-                AWS:
-                  Fn::Join:
-                    - ""
-                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
-                      - ${self:provider.stage}-
-                      - ${self:provider.region}-
-                      - "lambdaRole"
+              Principal: "*"
               Action:
               - s3:GetObject
-              - s3:PutObject
               Resource: arn:aws:s3:::${self:custom.s3Bucket}/*
 
     ResourcesBucket:
