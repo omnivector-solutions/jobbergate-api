@@ -12,3 +12,9 @@ get-pip.py
 .requirements.zip
 node_modules/
 media/
+.serverless-wsgi
+_warmup/
+serverless_wsgi.py
+unzip_requirements.py
+wsgi_handler.py
+
