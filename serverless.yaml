@@ -31,13 +31,6 @@ provider:
       - subnet-0a7b904695e55d8ed
       - subnet-0d4605c10612b0cdb
 
-#  resourcePolicy:
-#    - Effect: Allow
-#      Principal: '*'
-#      Action: execute-api:Invoke
-#      Resource:
-#        - execute-api:/*/*/*
-
   iamRoleStatements:
     -  Effect: "Allow"
        Action:
@@ -47,6 +40,14 @@ provider:
            - ""
            - - "arn:aws:s3:::"
              - ${self:service}-${self:provider.stage}-assets/*
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource:
+         Fn::Join:
+           - ""
+           - - "arn:aws:s3:::"
+             - ${self:service}-${self:provider.stage}-resources/*
 package:
   exclude:
     - node_modules/**
@@ -211,7 +212,14 @@ resources:
           Statement:
             - Sid: PublicReadGetObject
               Effect: Allow
-              Principal: "*"
+              Principal:
+                AWS:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
+                      - ${self:provider.stage}-
+                      - ${self:provider.region}-
+                      - "lambdaRole"
               Action:
               - s3:GetObject
               - s3:PutObject
@@ -231,7 +239,14 @@ resources:
           Statement:
             - Sid: PutGetObject
               Effect: Allow
-              Principal: "*"
+              Principal:
+                AWS:
+                  Fn::Join:
+                    - ""
+                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
+                      - ${self:provider.stage}-
+                      - ${self:provider.region}-
+                      - "lambdaRole"
               Action:
                 - s3:GetObject
                 - s3:PutObject
