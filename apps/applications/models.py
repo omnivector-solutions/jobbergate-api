@@ -12,8 +12,7 @@ class Application(models.Model):
         max_length=255,
     )
 
-    application_description = models.CharField(
-        max_length=255,
+    application_description = models.TextField(
         default=False,
     )
 
