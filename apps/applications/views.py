@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
@@ -18,7 +20,6 @@ class ApplicationListView(generics.ListCreateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     client = boto3.client('s3')
-    #TODO once working - populate dynamic
 
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
@@ -32,23 +33,20 @@ class ApplicationListView(generics.ListCreateAPIView):
             raise ParseError("Empty content")
         tar_file = data['upload_file']
 
+        application_uuid = str(uuid.uuid4())
+        user_id = data['application_owner']
+
+        s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/application.tar.gz"
+        data['application_location'] = s3_key
+
         serializer = ApplicationSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
-            user_id = serializer.data['application_owner']
-            application_id = serializer.data['id']
-            application_name = serializer.data['application_name']
             self.client.put_object(
                 Body=tar_file,
                 Bucket=S3_BUCKET,
-                Key=(
-                    "jobbergate-resources/"
-                    f"{user_id}/"
-                    f"{application_name}/"
-                    f"{application_id}/"
-                    "application.tar.gz"
-                )
+                Key=s3_key
             )
             return Response(serializer.data)
 

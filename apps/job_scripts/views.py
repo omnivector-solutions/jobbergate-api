@@ -1,6 +1,9 @@
 import ast
 import io
+import tempfile
+import json
 
+from django.http import FileResponse
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
@@ -11,6 +14,7 @@ from jinja2 import Template
 
 import boto3
 import tarfile
+
 
 from apps.applications.models import Application
 from apps.job_scripts.models import JobScript
@@ -40,23 +44,51 @@ class JobScriptListView(generics.ListCreateAPIView):
         application_id = data['application']
 
         application = Application.objects.get(id=application_id)
-        s3_key = application.application_location.replace(
-            "application_id",
-            str(application_id)
-            )
         obj = self.client.get_object(
             Bucket=S3_BUCKET,
-            Key=s3_key
+            Key=application.application_location
 
         )
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
-        for member in tar.getmembers():
-            if ".j2" in member.name:
-                contentfobj = tar.extractfile(member)
-                template_file = contentfobj.read().decode("utf-8")
+        template_files = {}
 
-        template = Template(template_file)
+        # existing functionality to render the job script
+        # this is what is returned in the job_script_data_as_str field
+        for member in tar.getmembers():
+            if member.name == param_dict['jobbergate_config']['default_template']:
+                contentfobj = tar.extractfile(member)
+                template_files["application.sh"] = contentfobj.read().decode("utf-8")
+            if member.name in param_dict['jobbergate_config']['supporting_files']:
+                contentfobj = tar.extractfile(member)
+                filename = param_dict['jobbergate_config']['supporting_files_output_name'][member.name]
+                print(f"filename is {filename}")
+                template_files[filename] = contentfobj.read().decode("utf-8")
+
+        # Use tempfile to generate .tar in memory - NOT write to disk
+        with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
+            with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
+                for member in tar.getmembers():
+                    if member.name in param_dict['jobbergate_config']['supporting_files']:
+                        print(f"file is {member.name}")
+                        contentfobj = tar.extractfile(member)
+                        supporting_file = contentfobj.read().decode("utf-8")
+                        template = Template(supporting_file)
+                        rendered_str = template.render(data=param_dict)
+                        tarinfo = tarfile.TarInfo(member.name)
+                        rendered_tar.addfile(tarinfo, io.StringIO(rendered_str))
+            f.flush()
+            f.seek(0)
+
+
+        tar_response = FileResponse(rendered_tar)
+
+
+        for key, value in template_files.items():
+            template = Template(value)
+            # TODO Identify this file not hard code once working
+            rendered_js = template.render(data=param_dict)
+            template_files[key] = rendered_js
 
         # TODO Identify this file not hard code once working
         rendered_js = template.render(param_dict=param_dict_flat)
