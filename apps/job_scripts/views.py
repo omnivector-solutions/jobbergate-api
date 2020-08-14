@@ -37,6 +37,10 @@ class JobScriptListView(generics.ListCreateAPIView):
         param_file = data['upload_file'].read()
         dict_str = param_file.decode("UTF-8")
         param_dict = ast.literal_eval(dict_str)
+        param_dict_flat = {}
+        for key, value in param_dict.items():
+            for nest_key, nest_value in param_dict[key].items():
+                param_dict_flat[nest_key] = nest_value
         application_id = data['application']
 
         application = Application.objects.get(id=application_id)
@@ -86,8 +90,9 @@ class JobScriptListView(generics.ListCreateAPIView):
             rendered_js = template.render(data=param_dict)
             template_files[key] = rendered_js
 
-
-        data['job_script_data_as_string'] = json.dumps(template_files)
+        # TODO Identify this file not hard code once working
+        rendered_js = template.render(param_dict=param_dict_flat)
+        data['job_script_data_as_string'] = rendered_js
 
         serializer = JobScriptSerializer(data=data)
 
