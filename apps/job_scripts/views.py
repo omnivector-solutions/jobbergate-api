@@ -63,12 +63,8 @@ class JobScriptListView(generics.ListCreateAPIView):
             for i in range(len(param_dict['jobbergate_config']['supporting_files'])):
                 if member.name == param_dict['jobbergate_config']['supporting_files'][i]:
                     contentfobj = tar.extractfile(member)
-                    print(i)
-                    print(type(param_dict['jobbergate_config']['supporting_files_output_name'][i]))
-                    print(param_dict['jobbergate_config']['supporting_files_output_name'][i])
                     # print(param_dict['jobbergate_config']['supporting_files_output_name'][i][member.name])
                     filename = param_dict['jobbergate_config']['supporting_files_output_name'][i]
-                    print(f"filename is {filename}")
                     template_files[filename] = contentfobj.read().decode("utf-8")
                     # template_file += "\nNEW_FILE\n"
                     # template_file += contentfobj.read().decode("utf-8")
@@ -78,7 +74,6 @@ class JobScriptListView(generics.ListCreateAPIView):
             with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
                 for member in tar.getmembers():
                     if member.name in param_dict['jobbergate_config']['supporting_files']:
-                        print(f"file is {member.name}")
                         contentfobj = tar.extractfile(member)
                         supporting_file = contentfobj.read().decode("utf-8")
                         template = Template(supporting_file)
@@ -96,9 +91,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             job_script_data_as_string
             template_files[key] = rendered_js
 
-        print(template_files)
         data['job_script_data_as_string'] = json.dumps(template_files)
-        print(data['job_script_data_as_string'])
 
         serializer = JobScriptSerializer(data=data)
 
