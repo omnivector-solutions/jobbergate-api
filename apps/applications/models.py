@@ -34,6 +34,10 @@ class Application(models.Model):
         on_delete=models.CASCADE,
     )
 
+    application_file = models.TextField(
+        default=False
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,

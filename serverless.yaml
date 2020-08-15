@@ -247,8 +247,8 @@ resources:
                       - ${self:provider.region}-
                       - "lambdaRole"
               Action:
-                - s3:GetObject
                 - s3:PutObject
+                - s3:GetObject
               Resource: arn:aws:s3:::${self:custom.s3ResourcesBucket}/*
 
     AssetsDistribution:
