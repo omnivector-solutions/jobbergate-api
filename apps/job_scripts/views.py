@@ -36,6 +36,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             raise ParseError("Empty content")
         param_file = data['upload_file'].read()
         dict_str = param_file.decode("UTF-8")
+        print(dict_str)
         param_dict = ast.literal_eval(dict_str)
         param_dict_flat = {}
         for key, value in param_dict.items():
