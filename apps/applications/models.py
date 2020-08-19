@@ -38,6 +38,10 @@ class Application(models.Model):
         default=False
     )
 
+    application_config = models.TextField(
+        default=False
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,

@@ -18,6 +18,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'application_dir_listing_acquired',
             'application_owner',
             'application_file',
+            'application_config',
             'created_at',
             'updated_at'
         ]
