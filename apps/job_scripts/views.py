@@ -53,6 +53,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}
+        support_files = param_dict['jobbergate_config']['supporting_files_output_name']
 
         # existing functionality to render the job script
         # this is what is returned in the job_script_data_as_str field
@@ -61,8 +62,9 @@ class JobScriptListView(generics.ListCreateAPIView):
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
             if member.name in param_dict['jobbergate_config']['supporting_files']:
+                match = [x for x in support_files if member.name in x]
                 contentfobj = tar.extractfile(member)
-                filename = param_dict['jobbergate_config']['supporting_files_output_name'][member.name]
+                filename = match[0][member.name][0]
                 print(f"filename is {filename}")
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
