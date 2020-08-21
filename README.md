@@ -76,7 +76,7 @@ TOKEN=`curl --silent -X POST -d "username=bdx&password=bdx" "http://127.0.0.1:80
 curl --silent -H "Authorization: JWT $TOKEN" http://127.0.0.1:8080/users/ | jq
 ```
 
-The response shoudl look like:
+The response should look like:
 
 ```json
 [
