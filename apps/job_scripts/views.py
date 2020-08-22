@@ -36,7 +36,6 @@ class JobScriptListView(generics.ListCreateAPIView):
             raise ParseError("Empty content")
         param_file = data['upload_file'].read()
         dict_str = param_file.decode("UTF-8")
-        print(dict_str)
         param_dict = ast.literal_eval(dict_str)
         param_dict_flat = {}
         for key, value in param_dict.items():
@@ -53,30 +52,29 @@ class JobScriptListView(generics.ListCreateAPIView):
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}
-        support_files = param_dict['jobbergate_config']['supporting_files_output_name']
+        support_files = param_dict_flat['supporting_files_output_name']
 
         # existing functionality to render the job script
         # this is what is returned in the job_script_data_as_str field
         for member in tar.getmembers():
-            if member.name == param_dict['jobbergate_config']['default_template']:
+            if member.name == param_dict_flat['default_template']:
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
-            if member.name in param_dict['jobbergate_config']['supporting_files']:
+            if member.name in param_dict_flat['supporting_files']:
                 match = [x for x in support_files if member.name in x]
                 contentfobj = tar.extractfile(member)
-                filename = match[0][member.name][0]
-                print(f"filename is {filename}")
+                filename = support_files[match[0]][0]
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
         # Use tempfile to generate .tar in memory - NOT write to disk
         with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
             with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
                 for member in tar.getmembers():
-                    if member.name in param_dict['jobbergate_config']['supporting_files']:
+                    if member.name in param_dict_flat['supporting_files']:
                         contentfobj = tar.extractfile(member)
                         supporting_file = contentfobj.read().decode("utf-8")
                         template = Template(supporting_file)
-                        rendered_str = template.render(data=param_dict)
+                        rendered_str = template.render(data=param_dict_flat)
                         tarinfo = tarfile.TarInfo(member.name)
                         rendered_tar.addfile(tarinfo, io.StringIO(rendered_str))
             f.flush()
@@ -86,7 +84,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         for key, value in template_files.items():
             template = Template(value)
             # TODO Identify this file not hard code once working
-            rendered_js = template.render(data=param_dict)
+            rendered_js = template.render(data=param_dict_flat)
             job_script_data_as_string
             template_files[key] = rendered_js
 
