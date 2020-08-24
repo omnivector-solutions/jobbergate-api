@@ -61,13 +61,15 @@ echo "from django.contrib.auth import get_user_model; User = get_user_model(); U
 
 ### API Usage
 
-Run the api server locally:
+#### Authentication:
+
+1. ##### Run the api server locally:
 
 ```bash
 ./manage.py runserver 0.0.0.0:8080
 ```
 
-Open another terminal and try interacting with the api:
+2. ##### Get a token pair:
 
 ```bash
 curl
@@ -75,23 +77,33 @@ curl
   -H "Content-Type: application/json" \
   -d '{"username": "bdx", "password": "bdx"}' http://localhost:8080/token/
 
-# Install jq `brew install jq` `or sudo snap install jq`
-TOKEN=`curl --silent -X POST -d "username=bdx&password=bdx" "http://127.0.0.1:8080/api-token-auth/" | jq -r '.token'`
+...
+{
+"refresh":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTU5ODM4MzQwNiwianRpIjoiYzdlYmFmMjIxMTg5NGVjYTkxM2NhMzczOWY3Yzc2Y2YiLCJ1c2VyX2lkIjoxfQ.0ZRA0oV6xEeg8imXbi65GBw9TD77AqwqBVrfDOP-4MI",
 
-curl --silent -H "Authorization: JWT $TOKEN" http://127.0.0.1:8080/users/ | jq
+"access":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNTk4Mjk3MzA2LCJqdGkiOiJlMDAwMGIxNWY4NTQ0NmQ1ODNmOTcxYmVhYzU5MGI5YSIsInVzZXJfaWQiOjF9.XGNjATlCROEpk8nB0zAyo_vt2IPw35g8afy6DRBdxAU"
+}
 ```
 
-The response should look like:
+3. ##### Use the returned access token to prove authentication for a protected view:
 
-```json
-[
-  {
-    "url": "http://127.0.0.1:8080/users/1/",
-    "username": "bdx",
-    "email": "bdx@bdx.com",
-    "is_staff": true
-  }
-]
+```bash
+curl \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNDU2LCJqdGkiOiJmZDJmOWQ1ZTFhN2M0MmU4OTQ5MzVlMzYyYmNhOGJjYSJ9.NHlztMGER7UADHZJlxNG0WSi22a2KaYSfd1S-AuT7lU" \
+  http://localhost:8080/users/
+```
+
+4. ##### When the access token expires, you can use the refresh token to get a new access token:
+
+```bash
+curl
+-X POST
+-H "Content-Type: application/json"
+-d '{"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImNvbGRfc3R1ZmYiOiLimIMiLCJleHAiOjIzNDU2NywianRpIjoiZGUxMmY0ZTY3MDY4NDI3ODg5ZjE1YWMyNzcwZGEwNTEifQ.aEoAYkSJjoWH1boshQAaTkf8G3yn0kapko6HFRt7Rh4"}'
+http://localhost:8080/token/refresh/
+
+...
+{"access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX3BrIjoxLCJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiY29sZF9zdHVmZiI6IuKYgyIsImV4cCI6MTIzNTY3LCJqdGkiOiJjNzE4ZTVkNjgzZWQ0NTQyYTU0NWJkM2VmMGI0ZGQ0ZSJ9.ekxRxgb9OKmHkfy-zs1Ro_xs1eMLXiR17dIDBVxeT-w"}
 ```
 
 Copyright (c) 2020 OmniVector Solutions
