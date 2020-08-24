@@ -1,4 +1,6 @@
 import uuid
+import tarfile
+import io
 
 from rest_framework.response import Response
 from rest_framework import generics
@@ -32,6 +34,17 @@ class ApplicationListView(generics.ListCreateAPIView):
         if 'upload_file' not in request.data:
             raise ParseError("Empty content")
         tar_file = data['upload_file']
+        tar_extract = tarfile.open(fileobj=data['upload_file'].file)
+
+        # try:
+        application_file = tar_extract.extractfile("jobbergate.py")
+        data['application_file'] = application_file.read()
+        # except Exception as e:
+        #     print(e)
+        #     print("no jobbergate.py to add to data")
+
+        application_config = tar_extract.extractfile("jobbergate.yaml")
+        data['application_config'] = application_config.read()
 
         application_uuid = str(uuid.uuid4())
         user_id = data['application_owner']
@@ -41,6 +54,7 @@ class ApplicationListView(generics.ListCreateAPIView):
 
         serializer = ApplicationSerializer(data=data)
 
+        tar_file.seek(0)
         if serializer.is_valid():
             serializer.save()
             self.client.put_object(
@@ -49,6 +63,8 @@ class ApplicationListView(generics.ListCreateAPIView):
                 Key=s3_key
             )
             return Response(serializer.data)
+        else:
+            print(serializer.data)
 
 
 class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
@@ -57,6 +73,24 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     '''
     serializer_class = ApplicationSerializer
     queryset = Application.objects.all()
+    client = boto3.client('s3')
+
+    # def get(self, request, pk):
+    #     application = Application.objects.get(id=pk)
+    #     print(type(application.application_location))
+    #     print(application.application_location)
+    #     obj = self.client.get_object(
+    #         Bucket=S3_BUCKET,
+    #         Key=application.application_location
+    #
+    #     )
+    #     buf = io.BytesIO(obj['Body'].read())
+    #     tar = tarfile.open(fileobj=buf)
+    #     application_file = tar.extractfile("jobbergate.py").read()
+    #     print(type(application_file))
+    #
+    #     serializer = ApplicationSerializer(instance=application)
+    #     return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)

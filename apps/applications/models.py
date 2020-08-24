@@ -12,8 +12,7 @@ class Application(models.Model):
         max_length=255,
     )
 
-    application_description = models.CharField(
-        max_length=255,
+    application_description = models.TextField(
         default=False,
     )
 
@@ -33,6 +32,14 @@ class Application(models.Model):
     application_owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+    )
+
+    application_file = models.TextField(
+        default=False
+    )
+
+    application_config = models.TextField(
+        default=False
     )
 
     created_at = models.DateTimeField(
