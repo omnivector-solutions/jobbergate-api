@@ -1,8 +1,11 @@
 django==3.0.7
 djangorestframework==3.11.0
-djangorestframework-jwt==1.11.0
+djangorestframework-simplejwt==4.4.0
 psycopg2-binary
 werkzeug
 boto3
 jinja2
 django-cors-headers==3.2.1
+
+
+curl   -X POST   -H "Content-Type: application/json"   -d '{"username": "bdx", "password": "bdx"}'   http://localhost:8080/token/
