@@ -70,6 +70,11 @@ Run the api server locally:
 Open another terminal and try interacting with the api:
 
 ```bash
+curl
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"username": "bdx", "password": "bdx"}' http://localhost:8080/token/
+
 # Install jq `brew install jq` `or sudo snap install jq`
 TOKEN=`curl --silent -X POST -d "username=bdx&password=bdx" "http://127.0.0.1:8080/api-token-auth/" | jq -r '.token'`
 
