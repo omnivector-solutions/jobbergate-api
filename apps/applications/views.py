@@ -37,11 +37,11 @@ class ApplicationListView(generics.ListCreateAPIView):
         tar_extract = tarfile.open(fileobj=data['upload_file'].file)
 
         # try:
-        application_file = tar_extract.extractfile("application.py")
+        application_file = tar_extract.extractfile("jobbergate.py")
         data['application_file'] = application_file.read()
         # except Exception as e:
         #     print(e)
-        #     print("no application.py to add to data")
+        #     print("no jobbergate.py to add to data")
 
         application_config = tar_extract.extractfile("jobbergate.yaml")
         data['application_config'] = application_config.read()
@@ -86,7 +86,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     #     )
     #     buf = io.BytesIO(obj['Body'].read())
     #     tar = tarfile.open(fileobj=buf)
-    #     application_file = tar.extractfile("application.py").read()
+    #     application_file = tar.extractfile("jobbergate.py").read()
     #     print(type(application_file))
     #
     #     serializer = ApplicationSerializer(instance=application)

@@ -52,7 +52,15 @@ class JobScriptListView(generics.ListCreateAPIView):
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}
-        support_files = param_dict_flat['supporting_files_output_name']
+        try:
+            support_files_ouput = param_dict_flat['supporting_files_output_name']
+        except KeyError:
+            support_files_ouput = []
+
+        try:
+            supporting_files = param_dict_flat['supporting_files']
+        except KeyError:
+            supporting_files = []
 
         # existing functionality to render the job script
         # this is what is returned in the job_script_data_as_str field
@@ -60,17 +68,17 @@ class JobScriptListView(generics.ListCreateAPIView):
             if member.name == param_dict_flat['default_template']:
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
-            if member.name in param_dict_flat['supporting_files']:
-                match = [x for x in support_files if member.name in x]
+            if member.name in support_files_ouput:
+                match = [x for x in support_files_ouput if member.name in x]
                 contentfobj = tar.extractfile(member)
-                filename = support_files[match[0]][0]
+                filename = support_files_ouput[match[0]][0]
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
         # Use tempfile to generate .tar in memory - NOT write to disk
         with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
             with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
                 for member in tar.getmembers():
-                    if member.name in param_dict_flat['supporting_files']:
+                    if member.name in supporting_files:
                         contentfobj = tar.extractfile(member)
                         supporting_file = contentfobj.read().decode("utf-8")
                         template = Template(supporting_file)
