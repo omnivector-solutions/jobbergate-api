@@ -1,53 +1,55 @@
 ---
-service: jobbbergate-api
+service: "jobbbergate-api"
 
 plugins:
-  - serverless-wsgi
-  - serverless-plugin-warmup
-  - serverless-iam-roles-per-function
-  - serverless-python-requirements
-  - serverless-plugin-resource-tagging
-  - serverless-db-info-plugin
-  - serverless-single-page-app-plugin
+  - "serverless-wsgi"
+  - "serverless-plugin-warmup"
+  - "serverless-iam-roles-per-function"
+  - "serverless-python-requirements"
+  - "serverless-plugin-resource-tagging"
+  - "serverless-db-info-plugin"
+  - "serverless-single-page-app-plugin"
 provider:
-  name: aws
-  region: us-west-2
+  name: "aws"
+  region: "us-west-2"
 
-  runtime: python3.6
+  runtime: "python3.8"
 
-  stage: ${opt:stage, "staging"}
+  stage: "${opt:stage, 'staging'}"
 
   stackTags:
-    Application: ${self:service}-${self:provider.stage}
+    Application: "${self:service}-${self:provider.stage}"
 
-  environment: ${file(./secrets/${self:provider.stage}.yaml)}
+  environment: "${file(./secrets/${self:provider.stage}.yaml)}"
 
   vpc:
     securityGroupIds:
-      - sg-cfac3d95
+      - "sg-cfac3d95"
     subnets:
-      - subnet-02bc060304e2d7916
-      - subnet-0881906e33eb25bc0
-      - subnet-0a7b904695e55d8ed
-      - subnet-0d4605c10612b0cdb
+      - "subnet-02bc060304e2d7916"
+      - "subnet-0881906e33eb25bc0"
+      - "subnet-0a7b904695e55d8ed"
+      - "subnet-0d4605c10612b0cdb"
 
-  iamRoleStatements:
-    -  Effect: "Allow"
-       Action:
-         - "s3:*"
-       Resource:
-         Fn::Join:
-           - ""
-           - - "arn:aws:s3:::"
-             - ${self:service}-${self:provider.stage}-assets/*
-    - Effect: "Allow"
-      Action:
-        - "s3:*"
-      Resource:
-         Fn::Join:
-           - ""
-           - - "arn:aws:s3:::"
-             - ${self:service}-${self:provider.stage}-resources/*
+#  iamRoleStatements:
+#
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:GetObject"
+#      Resource:
+#        Fn::Join:
+#          - ""
+#          - - "arn:aws:s3:::"
+#            - "${self:service}-${self:provider.stage}-assets/*"
+#
+#    - Effect: "Allow"
+#      Action:
+#        - "s3:*"
+#      Resource:
+#         Fn::Join:
+#           - ""
+#           - - "arn:aws:s3:::"
+#             - "${self:service}-${self:provider.stage}-resources/*"
 package:
   exclude:
     - node_modules/**
@@ -73,12 +75,12 @@ custom:
     zip: true
     dockerizePip: true
     layer: true
-    pythonBin: python3
-    fileName: requirements/requirements.txt
+    pythonBin: "python3"
+    fileName: "requirements/requirements.txt"
 
-  s3Bucket: ${self:service}-${self:provider.stage}-assets
-  s3ResourcesBucket: ${self:service}-${self:provider.stage}-resources
-  s3LocalPath: static/
+  s3Bucket: "${self:service}-${self:provider.stage}-assets"
+  s3ResourcesBucket: "${self:service}-${self:provider.stage}-resources"
+  s3LocalPath: "static/"
 
 
 functions:
@@ -212,14 +214,7 @@ resources:
           Statement:
             - Sid: PublicReadGetObject
               Effect: Allow
-              Principal:
-                AWS:
-                  Fn::Join:
-                    - ""
-                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
-                      - ${self:provider.stage}-
-                      - ${self:provider.region}-
-                      - "lambdaRole"
+              Principal: "*"
               Action:
               - s3:GetObject
               Resource: arn:aws:s3:::${self:custom.s3Bucket}/*
@@ -243,8 +238,8 @@ resources:
                   Fn::Join:
                     - ""
                     - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
-                      - ${self:provider.stage}-
-                      - ${self:provider.region}-
+                      - "${self:provider.stage}-"
+                      - "${self:provider.region}-"
                       - "lambdaRole"
               Action:
                 - s3:PutObject
@@ -294,9 +289,9 @@ resources:
       Type: AWS::RDS::DBInstance
       Properties:
         Engine: postgres
-        AllocatedStorage: 20
+        AllocatedStorage: 40
 
-        DBInstanceClass: db.t2.micro
+        DBInstanceClass: db.t3.small
         DBSubnetGroupName: !Ref AuroraClusterSubnetGroup
 
         DBName: ${self:provider.environment.DATABASE_NAME}
