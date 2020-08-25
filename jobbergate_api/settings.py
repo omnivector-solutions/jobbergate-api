@@ -167,8 +167,6 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = 'user.User'
 
-AUTHENTICATION_BACKENDS = ['apps.auth_backends.backends.EmailBackend']
-
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
 }
