@@ -2,6 +2,21 @@ import datetime
 import os
 
 
+SENTRY_DSN = os.environ.get('SENTRY_DSN')
+
+if SENTRY_DSN:
+    import sentry_sdk # noqa
+    from sentry_sdk.integrations.django import DjangoIntegration # noqa
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate = 1.0,
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
+
+
 # Make a way for django to know if we are running in serverless or local
 IS_OFFLINE = os.environ.get('LAMBDA_TASK_ROOT') is None
 
