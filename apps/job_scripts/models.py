@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 
-from django.contrib.auth.models import User
 
 from apps.applications.models import Application
 
@@ -21,7 +21,7 @@ class JobScript(models.Model):
     job_script_data_as_string = models.TextField()
 
     job_script_owner = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
 

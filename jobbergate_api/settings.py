@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     #'rest_auth',
+    'apps.user',
     'apps.job_scripts',
     'apps.job_submissions',
     'apps.applications',
@@ -163,6 +164,10 @@ REST_FRAMEWORK = {
 }
 
 # REST_USE_JWT = True
+
+AUTH_USER_MODEL = 'user.User'
+
+AUTHENTICATION_BACKENDS = ['apps.auth_backends.backends.EmailBackend']
 
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
