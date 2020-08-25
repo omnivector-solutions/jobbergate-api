@@ -44,7 +44,7 @@ Following the install steps, run these commands to create and apply and migratio
 ./manage.py collectstatic --noinput
 
 # Create superuser
-echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('bdx', 'bdx@bdx.com', 'bdx')" | ./manage.py shell
+echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('bdx@bdx.com', 'bdx')" | ./manage.py shell
 ```
 
 #### Create database object using django shell

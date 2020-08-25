@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework.authtoken',
     #'rest_auth',
+    'apps.user',
     'apps.job_scripts',
     'apps.job_submissions',
     'apps.applications',
@@ -88,7 +89,7 @@ if IS_OFFLINE:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': os.environ['DATABASE_NAME'],
             'USER': os.environ['DATABASE_USER'],
             'PASSWORD': os.environ['DATABASE_PASS'],
@@ -163,6 +164,8 @@ REST_FRAMEWORK = {
 }
 
 # REST_USE_JWT = True
+
+AUTH_USER_MODEL = 'user.User'
 
 JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=900),
