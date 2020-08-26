@@ -6,3 +6,4 @@ werkzeug
 boto3
 jinja2
 django-cors-headers==3.2.1
+pyyaml
