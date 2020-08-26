@@ -13,7 +13,7 @@ class Application(models.Model):
     )
 
     application_description = models.TextField(
-        default=False,
+        default="",
     )
 
     application_location = models.CharField(
