@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.conf.settings import AUTH_USER_MODEL, S3_BASS_PATH
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -14,19 +14,6 @@ class Application(models.Model):
 
     application_description = models.TextField(
         default="",
-    )
-
-    application_location = models.CharField(
-        max_length=255,
-        default=False,
-    )
-
-    application_dir_listing = models.TextField(
-        default=False
-    )
-
-    application_dir_listing_acquired = models.BooleanField(
-        default=False,
     )
 
     application_owner = models.ForeignKey(
@@ -59,3 +46,7 @@ class Application(models.Model):
 
     def __str__(self):
         return self.application_name
+
+    @property
+    def application_location(self)
+        return f"{S3_BASE_PATH}/{str(self.id)}/applications/{self.application_id}/jobbergate.tar.gz" # noqa

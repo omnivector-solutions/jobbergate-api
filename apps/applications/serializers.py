@@ -14,8 +14,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'application_name',
             'application_description',
             'application_location',
-            'application_dir_listing',
-            'application_dir_listing_acquired',
             'application_owner',
             'application_file',
             'application_config',
