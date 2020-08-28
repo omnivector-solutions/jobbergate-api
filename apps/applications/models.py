@@ -21,11 +21,6 @@ class Application(models.Model):
         on_delete=models.CASCADE,
     )
 
-    application_location = models.TextField(
-        max_length=255,
-        default=""
-    )
-
     application_file = models.TextField(
     )
 
@@ -50,6 +45,6 @@ class Application(models.Model):
     def __str__(self):
         return self.application_name
 
-    # @property
-    # def application_location(self):
-    #     return f"{settings.S3_BASE_PATH}/{str(self.application_owner_id)}/applications/{self.id}/jobbergate.tar.gz" # noqa
+    @property
+    def application_location(self):
+        return f"{settings.S3_BASE_PATH}/{str(self.application_owner_id)}/applications/{str(self.id)}/jobbergate.tar.gz" # noqa

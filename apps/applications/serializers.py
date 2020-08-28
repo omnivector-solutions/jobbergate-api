@@ -4,9 +4,6 @@ from apps.applications.models import Application
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
-    #job_script_owner = serializers.HiddenField(
-    #    default=serializers.CurrentUserDefault()
-    #)
     class Meta:
         model = Application
         fields = [
