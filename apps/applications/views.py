@@ -94,7 +94,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         else:
             file_change = False
 
-        if data['application_config'] != application.application_file:
+        if data['application_config'] != application.application_config:
             config_change = True
         else:
             config_change = False
