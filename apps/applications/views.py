@@ -1,6 +1,7 @@
 import uuid
 import tarfile
 import io
+import yaml
 
 from rest_framework.response import Response
 from rest_framework import generics
@@ -14,6 +15,27 @@ import boto3
 from apps.applications.models import Application
 from apps.applications.serializers import ApplicationSerializer
 
+
+def get_application(data):
+    tar_file = data['upload_file']
+    tar_extract = tarfile.open(fileobj=data['upload_file'].file)
+
+    application_file = tar_extract.extractfile("jobbergate.py")
+    data['application_file'] = application_file.read()
+
+    # application_config = tar_extract.extractfile("jobbergate.yaml")
+    # data['application_config'] = application_config.read()
+    application_config = tar_extract.extractfile("jobbergate.yaml").read()
+    application_config = yaml.load(application_config)
+    templates = []
+    for member in tar_extract.getmembers():
+        if ".j2" in member.name:
+            templates.append(member.name)
+
+    application_config['jobbergate_config']['template_files'] = templates
+    data['application_config'] = yaml.dump(application_config)
+
+    return tar_file, data
 
 class ApplicationListView(generics.ListCreateAPIView):
     """
@@ -31,40 +53,22 @@ class ApplicationListView(generics.ListCreateAPIView):
     def post(self, request, format=None):
         data = request.data
         parser_class = (FileUploadParser,)
-        if 'upload_file' not in request.data:
-            raise ParseError("Empty content")
-        tar_file = data['upload_file']
-        tar_extract = tarfile.open(fileobj=data['upload_file'].file)
+        if 'upload_file' in request.data:
+            tar_file, data = get_application(data)
+            serializer = ApplicationSerializer(data=data)
 
-        # try:
-        application_file = tar_extract.extractfile("jobbergate.py")
-        data['application_file'] = application_file.read()
-        # except Exception as e:
-        #     print(e)
-        #     print("no jobbergate.py to add to data")
-
-        application_config = tar_extract.extractfile("jobbergate.yaml")
-        data['application_config'] = application_config.read()
-
-        application_uuid = str(uuid.uuid4())
-        user_id = data['application_owner']
-
-        s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/application.tar.gz"
-        data['application_location'] = s3_key
-
-        serializer = ApplicationSerializer(data=data)
-
-        tar_file.seek(0)
-        if serializer.is_valid():
-            serializer.save()
-            self.client.put_object(
-                Body=tar_file,
-                Bucket=S3_BUCKET,
-                Key=s3_key
-            )
-            return Response(serializer.data)
-        else:
-            print(serializer.data)
+            tar_file.seek(0)
+            if serializer.is_valid():
+                obj = serializer.save()
+                application = Application.objects.get(id=obj.id)
+                self.client.put_object(
+                    Body=tar_file,
+                    Bucket=S3_BUCKET,
+                    Key=application.application_location
+                )
+                return Response(serializer.data)
+            else:
+                print(serializer.data)
 
 
 class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
@@ -75,29 +79,38 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
-    # def get(self, request, pk):
-    #     application = Application.objects.get(id=pk)
-    #     print(type(application.application_location))
-    #     print(application.application_location)
-    #     obj = self.client.get_object(
-    #         Bucket=S3_BUCKET,
-    #         Key=application.application_location
-    #
-    #     )
-    #     buf = io.BytesIO(obj['Body'].read())
-    #     tar = tarfile.open(fileobj=buf)
-    #     application_file = tar.extractfile("jobbergate.py").read()
-    #     print(type(application_file))
-    #
-    #     serializer = ApplicationSerializer(instance=application)
-    #     return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
 
         data = request.data
+        if 'upload_file' in data:
+            tar_file, data = get_application(data)
+        else:
+            print(data)
+
+        if data['application_file'] != application.application_file:
+            file_change = True
+        else:
+            file_change = False
+
+        if data['application_config'] != application.application_config:
+            config_change = True
+        else:
+            config_change = False
+
         serializer = ApplicationSerializer(instance=application, data=data)
 
+        tar_file.seek(0)
         if serializer.is_valid():
             serializer.save()
+            #if file or config changed then upload to s3 and overwrite at existing s3 key
+            if file_change or config_change:
+                print(application.application_location)
+                self.client.put_object(
+                    Body=tar_file,
+                    Bucket=S3_BUCKET,
+                    Key=application.application_location
+                )
+
             return Response(serializer.data)

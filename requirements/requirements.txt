@@ -7,3 +7,4 @@ boto3
 jinja2
 drf_yasg==1.17.1
 django-cors-headers==3.2.1
+pyyaml
