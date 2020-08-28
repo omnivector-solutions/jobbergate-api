@@ -97,7 +97,7 @@ You should now have access to the API docs:
 
 - swagger UI: `http://127.0.0.1:8080/swagger/`
 
-- redoc UI: `http://127.0.0.1:8080/redoc/`
+- redoc: `http://127.0.0.1:8080/redoc/`
 
 Copyright (c) 2020 OmniVector Solutions
 
