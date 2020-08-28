@@ -5,7 +5,9 @@ import os
 # Make a way for django to know if we are running in serverless or local
 IS_OFFLINE = os.environ.get('LAMBDA_TASK_ROOT') is None
 
-S3_BUCKET = 'jobbbergate-api-production-resources'
+S3_BUCKET = 'jobbbergate-api-staging-resources'
+
+S3_BASE_PATH = 'jobbergate-resources'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

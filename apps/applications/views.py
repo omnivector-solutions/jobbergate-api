@@ -56,7 +56,7 @@ class ApplicationListView(generics.ListCreateAPIView):
         application_uuid = str(uuid.uuid4())
         user_id = data['application_owner']
 
-        s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/application.tar.gz"
+        s3_key = f"jobbergate-resources/{user_id}/{application_uuid}/jobbergate.tar.gz"
         data['application_location'] = s3_key
 
         serializer = ApplicationSerializer(data=data)
@@ -82,22 +82,6 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
-    # def get(self, request, pk):
-    #     application = Application.objects.get(id=pk)
-    #     print(type(application.application_location))
-    #     print(application.application_location)
-    #     obj = self.client.get_object(
-    #         Bucket=S3_BUCKET,
-    #         Key=application.application_location
-    #
-    #     )
-    #     buf = io.BytesIO(obj['Body'].read())
-    #     tar = tarfile.open(fileobj=buf)
-    #     application_file = tar.extractfile("jobbergate.py").read()
-    #     print(type(application_file))
-    #
-    #     serializer = ApplicationSerializer(instance=application)
-    #     return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
