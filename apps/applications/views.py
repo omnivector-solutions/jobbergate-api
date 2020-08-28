@@ -9,7 +9,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from jobbergate_api.settings import S3_BUCKET
+from jobbergate_api.settings import S3_BUCKET, TAR_NAME
 
 import boto3
 
@@ -90,8 +90,13 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         else:
             print(data)
 
-        tar_update = tarfile.open(fileobj=data['upload_file'].file, mode="w|gz")
+        # tar_update = tarfile.open(fileobj=data['upload_file'].file, mode="w|gz")
+        tar_update = tarfile.open(TAR_NAME, "w|gz")
+        for member in tar_extract.getmembers():
+            tar_update.addfile(member)
+
         if data['application_file'] != application.application_file:
+            print("changing application file")
             file_change = True
             wr_application_file = io.StringIO()
             wr_application_file.write(data['application_file'])
@@ -101,6 +106,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             file_change = False
 
         if data['application_config'] != application.application_config:
+            print("changing config file")
             config_change = True
             wr_config_file = io.StringIO()
             wr_config_file.write(data['application_config'])
@@ -112,6 +118,10 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         serializer = ApplicationSerializer(instance=application, data=data)
 
         # tar_file.seek(0)
+        # file_like_object = io.BytesIO()
+        # tar_send = tarfile.open(fileobj=file_like_object, mode="w|gz")
+        # for member in tar_update.getmembers():
+        #     tar_send.addfile(member)
         if serializer.is_valid():
             serializer.save()
             #if file or config changed then upload to s3 and overwrite at existing s3 key
@@ -119,7 +129,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
                 print(tar_extract.getmembers())
                 tar_update.close()
                 self.client.put_object(
-                    Body=tar_update,
+                    Body=open(TAR_NAME, "rb"),
                     Bucket=S3_BUCKET,
                     Key=application.application_location
                 )
