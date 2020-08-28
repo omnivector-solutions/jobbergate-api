@@ -90,10 +90,14 @@ The response should look like:
 ```
 
 You should now have access to the API docs:
-• as json: `http://127.0.0.1:8080/swagger.json`
-• as yaml: `http://127.0.0.1:8080/swagger.yaml`
-• swagger UI: `http://127.0.0.1:8080/swagger/`
-• redoc UI: `http://127.0.0.1:8080/redoc/`
+
+- as json: `http://127.0.0.1:8080/swagger.json`
+
+- as yaml: `http://127.0.0.1:8080/swagger.yaml`
+
+- swagger UI: `http://127.0.0.1:8080/swagger/`
+
+- redoc UI: `http://127.0.0.1:8080/redoc/`
 
 Copyright (c) 2020 OmniVector Solutions
 
