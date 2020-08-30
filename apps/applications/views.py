@@ -2,13 +2,14 @@ import uuid
 import tarfile
 import io
 import yaml
+from io import StringIO
 
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from jobbergate_api.settings import S3_BUCKET
+from jobbergate_api.settings import S3_BUCKET, TAR_NAME
 
 import boto3
 
@@ -35,7 +36,7 @@ def get_application(data):
     application_config['jobbergate_config']['template_files'] = templates
     data['application_config'] = yaml.dump(application_config)
 
-    return tar_file, data
+    return tar_file, tar_extract, data
 
 class ApplicationListView(generics.ListCreateAPIView):
     """
@@ -54,7 +55,7 @@ class ApplicationListView(generics.ListCreateAPIView):
         data = request.data
         parser_class = (FileUploadParser,)
         if 'upload_file' in request.data:
-            tar_file, data = get_application(data)
+            tar_file, tar_extract, data = get_application(data)
             serializer = ApplicationSerializer(data=data)
 
             tar_file.seek(0)
@@ -85,30 +86,48 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
 
         data = request.data
         if 'upload_file' in data:
-            tar_file, data = get_application(data)
+            tar_file, tar_extract, data = get_application(data)
         else:
             print(data)
 
+        # tar_update = tarfile.open(fileobj=data['upload_file'].file, mode="w|gz")
+        tar_update = tarfile.open(TAR_NAME, "w|gz")
+        for member in tar_extract.getmembers():
+            tar_update.addfile(member)
+
         if data['application_file'] != application.application_file:
             file_change = True
+            wr_application_file = io.StringIO()
+            wr_application_file.write(data['application_file'])
+            wr_application_file.close()
+            tar_update.addfile(tarfile.TarInfo("jobbergate.py"), fileobj=wr_application_file)
         else:
             file_change = False
 
         if data['application_config'] != application.application_config:
             config_change = True
+            wr_config_file = io.StringIO()
+            wr_config_file.write(data['application_config'])
+            wr_config_file.close()
+            tar_update.addfile(tarfile.TarInfo("jobbergate.yaml"), fileobj=wr_config_file)
         else:
             config_change = False
 
         serializer = ApplicationSerializer(instance=application, data=data)
 
-        tar_file.seek(0)
+        # tar_file.seek(0)
+        # file_like_object = io.BytesIO()
+        # tar_send = tarfile.open(fileobj=file_like_object, mode="w|gz")
+        # for member in tar_update.getmembers():
+        #     tar_send.addfile(member)
         if serializer.is_valid():
             serializer.save()
             #if file or config changed then upload to s3 and overwrite at existing s3 key
             if file_change or config_change:
-                print(application.application_location)
+                print(tar_extract.getmembers())
+                tar_update.close()
                 self.client.put_object(
-                    Body=tar_file,
+                    Body=open(TAR_NAME, "rb"),
                     Bucket=S3_BUCKET,
                     Key=application.application_location
                 )
