@@ -96,7 +96,6 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             tar_update.addfile(member)
 
         if data['application_file'] != application.application_file:
-            print("changing application file")
             file_change = True
             wr_application_file = io.StringIO()
             wr_application_file.write(data['application_file'])
@@ -106,7 +105,6 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             file_change = False
 
         if data['application_config'] != application.application_config:
-            print("changing config file")
             config_change = True
             wr_config_file = io.StringIO()
             wr_config_file.write(data['application_config'])
