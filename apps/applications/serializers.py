@@ -4,9 +4,6 @@ from apps.applications.models import Application
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
-    #job_script_owner = serializers.HiddenField(
-    #    default=serializers.CurrentUserDefault()
-    #)
     class Meta:
         model = Application
         fields = [
@@ -14,8 +11,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             'application_name',
             'application_description',
             'application_location',
-            'application_dir_listing',
-            'application_dir_listing_acquired',
             'application_owner',
             'application_file',
             'application_config',

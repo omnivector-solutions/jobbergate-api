@@ -16,30 +16,15 @@ class Application(models.Model):
         default="",
     )
 
-    application_location = models.CharField(
-        max_length=255,
-        default=False,
-    )
-
-    application_dir_listing = models.TextField(
-        default=False
-    )
-
-    application_dir_listing_acquired = models.BooleanField(
-        default=False,
-    )
-
     application_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
 
     application_file = models.TextField(
-        default=False
     )
 
     application_config = models.TextField(
-        default=False
     )
 
     created_at = models.DateTimeField(
@@ -59,3 +44,7 @@ class Application(models.Model):
 
     def __str__(self):
         return self.application_name
+
+    @property
+    def application_location(self):
+        return f"{settings.S3_BASE_PATH}/{str(self.application_owner_id)}/applications/{str(self.id)}/jobbergate.tar.gz" # noqa
