@@ -1,15 +1,13 @@
-import uuid
 import tarfile
-import io
+import os
 import yaml
-from io import StringIO
 
 from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from jobbergate_api.settings import S3_BUCKET, TAR_NAME
+from jobbergate_api.settings import S3_BUCKET, TAR_NAME, APPLICATION_FILE, CONFIG_FILE
 
 import boto3
 
@@ -24,8 +22,6 @@ def get_application(data):
     application_file = tar_extract.extractfile("jobbergate.py")
     data['application_file'] = application_file.read()
 
-    # application_config = tar_extract.extractfile("jobbergate.yaml")
-    # data['application_config'] = application_config.read()
     application_config = tar_extract.extractfile("jobbergate.yaml").read()
     application_config = yaml.safe_load(application_config)
     templates = []
@@ -37,6 +33,19 @@ def get_application(data):
     data['application_config'] = yaml.dump(application_config)
 
     return tar_file, tar_extract, data
+
+def tardir(path,
+           tar_name,
+           tar_list):
+    archive = tarfile.open(tar_name, "w|gz")
+    for root, dirs, files in os.walk(path):
+        if root in tar_list:
+            for file in files:
+                archive.add(
+                    os.path.join(root, file),
+                    arcname=file
+                    )
+    archive.close()
 
 class ApplicationListView(generics.ListCreateAPIView):
     """
@@ -53,7 +62,6 @@ class ApplicationListView(generics.ListCreateAPIView):
 
     def post(self, request, format=None):
         data = request.data
-        print(data)
         parser_class = (FileUploadParser,)
         if 'upload_file' in request.data:
             tar_file, tar_extract, data = get_application(data)
@@ -88,44 +96,38 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         data = request.data
         if 'upload_file' in data:
             tar_file, tar_extract, data = get_application(data)
+            #extract all to /tmp/jobbergate and will overwite if changes
+            os.mkdir("/tmp/jobbergate")
+            tar_extract.extractall(path="/tmp/jobbergate")
         else:
             print(data)
 
-        # tar_update = tarfile.open(fileobj=data['upload_file'].file, mode="w|gz")
-        tar_update = tarfile.open(TAR_NAME, "w|gz")
-        for member in tar_extract.getmembers():
-            tar_update.addfile(member)
-
         if data['application_file'] != application.application_file:
             file_change = True
-            wr_application_file = io.StringIO()
-            wr_application_file.write(data['application_file'])
+            # write over /tmp/jobbergate/jobbergate.py
+            wr_application_file = open(APPLICATION_FILE, "w")
+            af = wr_application_file.write(data['application_file'])
             wr_application_file.close()
-            tar_update.addfile(tarfile.TarInfo("jobbergate.py"), fileobj=wr_application_file)
         else:
             file_change = False
 
         if data['application_config'] != application.application_config:
             config_change = True
-            wr_config_file = io.StringIO()
-            wr_config_file.write(data['application_config'])
+            # write over /tmp/jobbergate/jobbergate.yaml
+            wr_config_file = open(CONFIG_FILE, "w")
+            cf = wr_config_file.write(data['application_config'])
             wr_config_file.close()
-            tar_update.addfile(tarfile.TarInfo("jobbergate.yaml"), fileobj=wr_config_file)
         else:
             config_change = False
 
         serializer = ApplicationSerializer(instance=application, data=data)
 
-        # tar_file.seek(0)
-        # file_like_object = io.BytesIO()
-        # tar_send = tarfile.open(fileobj=file_like_object, mode="w|gz")
-        # for member in tar_update.getmembers():
-        #     tar_send.addfile(member)
         if serializer.is_valid():
             serializer.save()
             #if file or config changed then upload to s3 and overwrite at existing s3 key
             if file_change or config_change:
-                tar_update.close()
+                tar_list = ["/tmp/jobbergate", "/tmp/jobbergate/templates"]
+                tardir(path="/tmp/jobbergate", tar_name=TAR_NAME, tar_list=tar_list)
                 self.client.put_object(
                     Body=open(TAR_NAME, "rb"),
                     Bucket=S3_BUCKET,
