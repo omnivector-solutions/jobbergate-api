@@ -94,6 +94,8 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         application = Application.objects.get(id=pk)
 
         data = request.data
+        print("testing web staging: received data")
+        print(data)
         if 'upload_file' in data:
             tar_file, tar_extract, data = get_application(data)
             #extract all to /tmp/jobbergate and will overwite if changes
