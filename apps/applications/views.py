@@ -116,6 +116,11 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
 
         serializer = ApplicationSerializer(instance=application, data=data)
 
+        # tar_file.seek(0)
+        # file_like_object = io.BytesIO()
+        # tar_send = tarfile.open(fileobj=file_like_object, mode="w|gz")
+        # for member in tar_update.getmembers():
+        #     tar_send.addfile(member)
         if serializer.is_valid():
             serializer.save()
             #if file or config changed then upload to s3 and overwrite at existing s3 key
