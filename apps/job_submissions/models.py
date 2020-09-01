@@ -30,6 +30,10 @@ class JobSubmission(models.Model):
         related_query_name="job_submission",
     )
 
+    slurm_job_id = models.TextField(
+        default=""
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         editable=False,
