@@ -27,7 +27,7 @@ def get_application(data):
     # application_config = tar_extract.extractfile("jobbergate.yaml")
     # data['application_config'] = application_config.read()
     application_config = tar_extract.extractfile("jobbergate.yaml").read()
-    application_config = yaml.load(application_config)
+    application_config = yaml.safe_load(application_config)
     templates = []
     for member in tar_extract.getmembers():
         if ".j2" in member.name:
@@ -53,6 +53,7 @@ class ApplicationListView(generics.ListCreateAPIView):
 
     def post(self, request, format=None):
         data = request.data
+        print(data)
         parser_class = (FileUploadParser,)
         if 'upload_file' in request.data:
             tar_file, tar_extract, data = get_application(data)
@@ -124,7 +125,6 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
             #if file or config changed then upload to s3 and overwrite at existing s3 key
             if file_change or config_change:
-                print(tar_extract.getmembers())
                 tar_update.close()
                 self.client.put_object(
                     Body=open(TAR_NAME, "rb"),

@@ -12,6 +12,7 @@ class JobSubmissionSerializer(serializers.ModelSerializer):
             'job_submission_description',
             'job_submission_owner',
             'job_script',
+            'slurm_job_id',
             'created_at',
             'updated_at'
         ]
