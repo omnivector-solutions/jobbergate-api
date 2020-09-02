@@ -20,7 +20,15 @@ if SENTRY_DSN:
 # Make a way for django to know if we are running in serverless or local
 IS_OFFLINE = os.environ.get('LAMBDA_TASK_ROOT') is None
 
-S3_BUCKET = 'jobbbergate-api-production-resources'
+S3_BUCKET = f'jobbbergate-api-{os.environ["STAGE"]}-resources'
+
+S3_BASE_PATH = 'jobbergate-resources'
+
+TAR_NAME = "/tmp/jobbergate/jobbergate.tar.gz"
+
+APPLICATION_FILE = "/tmp/jobbergate/jobbergate.py"
+
+CONFIG_FILE = "/tmp/jobbergate/jobbergate.yaml"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -104,7 +112,7 @@ if IS_OFFLINE:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ['DATABASE_NAME'],
             'USER': os.environ['DATABASE_USER'],
             'PASSWORD': os.environ['DATABASE_PASS'],

@@ -71,7 +71,7 @@ Open another terminal and try interacting with the api:
 
 ```bash
 # Install jq `brew install jq` `or sudo snap install jq`
-TOKEN=`curl --silent -X POST -d "username=bdx&password=bdx" "http://127.0.0.1:8080/api-token-auth/" | jq -r '.token'`
+TOKEN=`curl --silent -X POST -d "email=bdx@bdx.com&password=bdx" "http://127.0.0.1:8080/api-token-auth/" | jq -r '.token'`
 
 curl --silent -H "Authorization: JWT $TOKEN" http://127.0.0.1:8080/users/ | jq
 ```
