@@ -1,6 +1,7 @@
-import tarfile
 import os
+import io
 import yaml
+import tarfile
 
 from rest_framework.response import Response
 from rest_framework import generics
@@ -92,35 +93,45 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
 
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
+        obj = self.client.get_object(
+            Bucket=S3_BUCKET,
+            Key=application.application_location
+
+        )
+        buf = io.BytesIO(obj['Body'].read())
+        tar_extract = tarfile.open(fileobj=buf)
+
+        # extract all to /tmp/jobbergate and will overwite if changes
+        try:
+            os.mkdir("/tmp/jobbergate")
+        except FileExistsError:
+            pass
+        tar_extract.extractall(path="/tmp/jobbergate")
 
         data = request.data
-        print("testing web staging: received data")
-        print(data)
-        if 'upload_file' in data:
-            tar_file, tar_extract, data = get_application(data)
-            #extract all to /tmp/jobbergate and will overwite if changes
-            os.mkdir("/tmp/jobbergate")
-            tar_extract.extractall(path="/tmp/jobbergate")
-        else:
-            print(data)
 
         if data['application_file'] != application.application_file:
             file_change = True
-            # write over /tmp/jobbergate/jobbergate.py
-            wr_application_file = open(APPLICATION_FILE, "w")
-            af = wr_application_file.write(data['application_file'])
-            wr_application_file.close()
         else:
             file_change = False
+        # write over /tmp/jobbergate/jobbergate.py
+        os.remove(APPLICATION_FILE)
+        wr_application_file = open(APPLICATION_FILE, "w")
+        af = wr_application_file.write(data['application_file'])
+        wr_application_file.close()
 
         if data['application_config'] != application.application_config:
             config_change = True
-            # write over /tmp/jobbergate/jobbergate.yaml
-            wr_config_file = open(CONFIG_FILE, "w")
-            cf = wr_config_file.write(data['application_config'])
-            wr_config_file.close()
         else:
+            # This is for if ONLY _file is updated because the
+            # data submitted wont have ['application_config']
             config_change = False
+
+        # write over /tmp/jobbergate/jobbergate.yaml
+        os.remove(CONFIG_FILE)
+        wr_config_file = open(CONFIG_FILE, "w")
+        cf = wr_config_file.write(data['application_config'])
+        wr_config_file.close()
 
         serializer = ApplicationSerializer(instance=application, data=data)
 
@@ -129,6 +140,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             #if file or config changed then upload to s3 and overwrite at existing s3 key
             if file_change or config_change:
                 tar_list = ["/tmp/jobbergate", "/tmp/jobbergate/templates"]
+                # dir to tar now has new jobbergate .py and .yaml
                 tardir(path="/tmp/jobbergate", tar_name=TAR_NAME, tar_list=tar_list)
                 self.client.put_object(
                     Body=open(TAR_NAME, "rb"),
