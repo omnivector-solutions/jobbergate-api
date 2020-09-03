@@ -27,7 +27,8 @@ def get_application(data):
     application_config = yaml.safe_load(application_config)
     templates = []
     for member in tar_extract.getmembers():
-        if ".j2" in member.name:
+        if "templates" in member.name:
+            # Means it is in the /templates dir within tarfile
             templates.append(member.name)
 
     application_config['jobbergate_config']['template_files'] = templates
