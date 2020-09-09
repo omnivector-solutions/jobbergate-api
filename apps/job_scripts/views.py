@@ -63,10 +63,13 @@ class JobScriptListView(generics.ListCreateAPIView):
         except KeyError:
             supporting_files = []
 
-        # existing functionality to render the job script
-        # this is what is returned in the job_script_data_as_str field
+        # This is to handle filename OR full path in tar file
+        default_template = [
+            param_dict_flat['default_template'],
+            "templates/" + param_dict_flat['default_template']
+        ]
         for member in tar.getmembers():
-            if member.name == param_dict_flat['default_template']:
+            if member.name in default_template:
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
             if member.name in support_files_ouput:
