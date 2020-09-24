@@ -36,8 +36,18 @@ class JobScriptListView(generics.ListCreateAPIView):
             raise ParseError("Empty content")
         param_file = data['upload_file'].read()
         dict_str = param_file.decode("UTF-8")
-        # param_dict = ast.literal_eval(dict_str)
-        param_dict = json.loads(dict_str)
+        try:
+            param_dict = json.loads(dict_str)
+        except json.decoder.JSONDecodeError:
+            return Response(
+                {"detail": (
+                    "There was an error with the "
+                    "--param-file Please "
+                    "review to confirm it is valid JSON"
+                )
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         param_dict_flat = {}
         for key, value in param_dict.items():
             for nest_key, nest_value in param_dict[key].items():
@@ -92,13 +102,27 @@ class JobScriptListView(generics.ListCreateAPIView):
             f.flush()
             f.seek(0)
 
-        job_script_data_as_string = ""
-        for key, value in template_files.items():
-            template = Template(value)
-            # TODO Identify this file not hard code once working
-            rendered_js = template.render(data=param_dict_flat)
-            job_script_data_as_string
-            template_files[key] = rendered_js
+        # job_script_data_as_string = ""
+        if len(template_files) > 0:
+            for key, value in template_files.items():
+                template = Template(value)
+                # TODO Identify this file not hard code once working
+                rendered_js = template.render(data=param_dict_flat)
+                # job_script_data_as_string
+                template_files[key] = rendered_js
+        else:
+            return Response(
+                {"detail": (
+                    "There was a problem rendering templates. "
+                    "please confirm filenames in jobbergate.yaml "
+                    f"match what was uploaded for application id {application_id}. "
+                    f"Default Template: {param_dict_flat['default_template']} "
+                    f"Supporting files: {supporting_files} "
+                )
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
         data['job_script_data_as_string'] = json.dumps(template_files)
 
