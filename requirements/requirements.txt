@@ -9,3 +9,4 @@ drf_yasg==1.17.1
 django-cors-headers==3.2.1
 sentry-sdk
 pyyaml
+django-rest-registration

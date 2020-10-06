@@ -20,6 +20,11 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+api_urlpatterns = [
+    path('accounts/', include('rest_registration.api.urls')),
+    # path('', include('links.api.urls')),
+]
+
 urlpatterns = [
     url(r'^swagger(?P<format>\.json|\.yaml)$',
         schema_view.without_ui(cache_timeout=0), name='schema-json'),
@@ -32,5 +37,6 @@ urlpatterns = [
     path('', include('apps.job_submissions.urls')),
     path('', include('apps.applications.urls')),
     path('api-token-auth/', obtain_jwt_token),
+    path('', include(api_urlpatterns)),
 
 ]
