@@ -72,7 +72,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             if member.name in default_template:
                 contentfobj = tar.extractfile(member)
                 template_files["application.sh"] = contentfobj.read().decode("utf-8")
-            if member.name in support_files_ouput:
+            if member.name in supporting_files:
                 match = [x for x in support_files_ouput if member.name in x]
                 contentfobj = tar.extractfile(member)
                 filename = support_files_ouput[match[0]][0]
