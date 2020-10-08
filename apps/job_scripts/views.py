@@ -1,4 +1,4 @@
-import ast
+import os
 import io
 import tempfile
 import json
@@ -9,7 +9,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from jobbergate_api.settings import S3_BUCKET
+from jobbergate_api.settings import S3_BUCKET, TEMPLATE_DIR
 from jinja2 import Template
 
 import boto3
@@ -52,6 +52,8 @@ class JobScriptListView(generics.ListCreateAPIView):
         )
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
+        if not os.path.exists(TEMPLATE_DIR):
+            os.makedirs(TEMPLATE_DIR)
         template_files = {}
         try:
             support_files_ouput = param_dict_flat['supporting_files_output_name']
