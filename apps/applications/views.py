@@ -41,12 +41,18 @@ def tardir(path,
            tar_list):
     archive = tarfile.open(tar_name, "w|gz")
     for root, dirs, files in os.walk(path):
-        if root in tar_list:
+        if root == tar_list[0]:
             for file in files:
                 archive.add(
                     os.path.join(root, file),
                     arcname=file
                     )
+        elif root == tar_list[1]:
+            for file in files:
+                archive.add(
+                    os.path.join(root, file),
+                    arcname=f"templates/{file}"
+                )
     archive.close()
 
 class ApplicationListView(generics.ListCreateAPIView):

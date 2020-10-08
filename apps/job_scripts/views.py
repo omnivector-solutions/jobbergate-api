@@ -59,7 +59,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             support_files_ouput = []
 
         try:
-            supporting_files = param_dict_flat['supporting_files']
+            supporting_files = param_dict_flat['template_files']
         except KeyError:
             supporting_files = []
 
