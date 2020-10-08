@@ -25,13 +25,6 @@ def get_application(data):
 
     application_config = tar_extract.extractfile("jobbergate.yaml").read()
     application_config = yaml.safe_load(application_config)
-    templates = []
-    for member in tar_extract.getmembers():
-        if "templates" in member.name:
-            # Means it is in the /templates dir within tarfile
-            templates.append(member.name)
-
-    application_config['jobbergate_config']['template_files'] = templates
     data['application_config'] = yaml.dump(application_config)
 
     return tar_file, tar_extract, data

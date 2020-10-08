@@ -1,4 +1,4 @@
-import ast
+import os
 import io
 import tempfile
 import json
@@ -9,8 +9,8 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from jobbergate_api.settings import S3_BUCKET
-from jinja2 import Template
+from jobbergate_api.settings import S3_BUCKET, TEMPLATE_DIR
+from jinja2 import Template, FileSystemLoader, Environment
 
 import boto3
 import tarfile
@@ -52,6 +52,8 @@ class JobScriptListView(generics.ListCreateAPIView):
         )
         buf = io.BytesIO(obj['Body'].read())
         tar = tarfile.open(fileobj=buf)
+        if not os.path.exists(TEMPLATE_DIR):
+            os.makedirs(TEMPLATE_DIR)
         template_files = {}
         try:
             support_files_ouput = param_dict_flat['supporting_files_output_name']
@@ -68,38 +70,66 @@ class JobScriptListView(generics.ListCreateAPIView):
             param_dict_flat['default_template'],
             "templates/" + param_dict_flat['default_template']
         ]
-        for member in tar.getmembers():
-            if member.name in default_template:
-                contentfobj = tar.extractfile(member)
-                template_files["application.sh"] = contentfobj.read().decode("utf-8")
-            if member.name in supporting_files:
-                match = [x for x in support_files_ouput if member.name in x]
-                contentfobj = tar.extractfile(member)
-                filename = support_files_ouput[match[0]][0]
-                template_files[filename] = contentfobj.read().decode("utf-8")
+        #start previous tar extract
+
+        # for member in tar.getmembers():
+        #     if member.name in default_template:
+        #         contentfobj = tar.extractfile(member)
+        #         template_files["application.sh"] = contentfobj.read().decode("utf-8")
+        #     if member.name in supporting_files:
+        #         match = [x for x in support_files_ouput if member.name in x]
+        #         if len(match) > 0:
+        #             contentfobj = tar.extractfile(member)
+        #             filename = support_files_ouput[match[0]][0]
+        #             template_files[filename] = contentfobj.read().decode("utf-8")
 
         # Use tempfile to generate .tar in memory - NOT write to disk
-        with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
-            with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
-                for member in tar.getmembers():
-                    if member.name in supporting_files:
-                        contentfobj = tar.extractfile(member)
-                        supporting_file = contentfobj.read().decode("utf-8")
-                        template = Template(supporting_file)
-                        rendered_str = template.render(data=param_dict_flat)
-                        tarinfo = tarfile.TarInfo(member.name)
-                        rendered_tar.addfile(tarinfo, io.StringIO(rendered_str))
-            f.flush()
-            f.seek(0)
+        # with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
+        #     with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
+        #         for member in tar.getmembers():
+        #             if member.name in supporting_files:
+        #                 contentfobj = tar.extractfile(member)
+        #                 supporting_file = contentfobj.read().decode("utf-8")
+        #                 template = Template(supporting_file)
+        #                 rendered_str = template.render(data=param_dict_flat)
+        #                 tarinfo = tarfile.TarInfo(member.name)
+        #                 rendered_tar.addfile(tarinfo, io.StringIO(rendered_str))
+        #     f.flush()
+        #     f.seek(0)
+        # End previous tar extract
 
-        job_script_data_as_string = ""
-        for key, value in template_files.items():
-            template = Template(value)
-            # TODO Identify this file not hard code once working
+        # start new tar extract
+        for member in tar.getmembers():
+            if member.name in supporting_files + default_template:
+                path = f"/tmp/jobbergate/{member.name}"
+                print(f"path is {path}")
+                tar.extract(member=member, path=path)
+
+
+        template_list = os.listdir(TEMPLATE_DIR)
+        # Switch to dir with templates to render
+        # os.chdir(TEMPLATE_DIR)
+        for i in template_list:
+            template_path = f"{TEMPLATE_DIR}/{i}"
+            print(f"type is {type(template_path)}")
+            print(f"path is {template_path}")
+            template_str = open(template_path, "r").read()
+            print(template_str)
+            template = Template(template_str)
             rendered_js = template.render(data=param_dict_flat)
-            job_script_data_as_string
-            template_files[key] = rendered_js
+            template_files[i] = rendered_js
 
+
+        # job_script_data_as_string = ""
+        # for key, value in template_files.items():
+        #     template = Template(value)
+        #     # TODO Identify this file not hard code once working
+        #     rendered_js = template.render(data=param_dict_flat)
+        #     job_script_data_as_string
+        #     template_files[key] = rendered_js
+
+        print(template_files)
+        print(var_does_not_exist)
         data['job_script_data_as_string'] = json.dumps(template_files)
 
         serializer = JobScriptSerializer(data=data)
