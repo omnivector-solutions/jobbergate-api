@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
 from jobbergate_api.settings import S3_BUCKET, TEMPLATE_DIR
-from jinja2 import Template, FileSystemLoader, Environment
+from jinja2 import BaseLoader, Environment#, Template
 
 import boto3
 import tarfile
@@ -101,21 +101,23 @@ class JobScriptListView(generics.ListCreateAPIView):
         # start new tar extract
         for member in tar.getmembers():
             if member.name in supporting_files + default_template:
-                path = f"/tmp/jobbergate/{member.name}"
-                print(f"path is {path}")
-                tar.extract(member=member, path=path)
+                tar.extract(member=member, path="/tmp/jobbergate")
 
 
         template_list = os.listdir(TEMPLATE_DIR)
+        print(template_list)
+        print(type(template_list[0]))
         # Switch to dir with templates to render
         # os.chdir(TEMPLATE_DIR)
         for i in template_list:
-            template_path = f"{TEMPLATE_DIR}/{i}"
+            print(type(i))
+            template_path = f"{TEMPLATE_DIR}/{str(i)}"
             print(f"type is {type(template_path)}")
             print(f"path is {template_path}")
             template_str = open(template_path, "r").read()
-            print(template_str)
-            template = Template(template_str)
+            print(param_dict_flat)
+            # template = Template(template_str)
+            template = Environment(loader=BaseLoader()).from_string(template_str)
             rendered_js = template.render(data=param_dict_flat)
             template_files[i] = rendered_js
 
