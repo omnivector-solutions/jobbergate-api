@@ -7,9 +7,8 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
-from rest_framework.exceptions import ParseError
+from guardian.decorators import permission_required_or_403
 from jobbergate_api.settings import S3_BUCKET, TAR_NAME, APPLICATION_FILE, CONFIG_FILE
-
 import boto3
 
 from apps.applications.models import Application
@@ -49,6 +48,7 @@ def tardir(path,
                     )
     archive.close()
 
+@permission_required_or_403('application.view_obj', (Post, 'slug', 'slug'))
 class ApplicationListView(generics.ListCreateAPIView):
     """
     list view for 'application/'
@@ -88,6 +88,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'application/<int:pk>'
     '''
     serializer_class = ApplicationSerializer
+
     queryset = Application.objects.all()
     client = boto3.client('s3')
 

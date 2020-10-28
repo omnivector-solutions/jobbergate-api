@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Application(models.Model):
     """The application table is used to track information
     about jobbergate applications.
@@ -41,6 +40,9 @@ class Application(models.Model):
         verbose_name = 'application'
         verbose_name_plural = 'applications'
         db_table = 'applications'
+        permissions = (
+            ('view_obj', 'Can view object'),
+        )
 
     def __str__(self):
         return self.application_name

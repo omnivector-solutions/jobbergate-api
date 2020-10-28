@@ -59,12 +59,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    # 'rest_auth',
+    'guardian',
     'apps.user',
     'apps.job_scripts',
     'apps.job_submissions',
     'apps.applications',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'guardian.backends.ObjectPermissionBackend',
+)
 
 CORS_ORIGIN_ALLOW_ALL = True
 
