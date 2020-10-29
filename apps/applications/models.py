@@ -41,7 +41,7 @@ class Application(models.Model):
         verbose_name_plural = 'applications'
         db_table = 'applications'
         permissions = (
-            ('view_obj', 'Can view object'),
+            ('applications | application | Can view application', 'Can view object'),
         )
 
     def __str__(self):

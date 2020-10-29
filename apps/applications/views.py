@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
-from guardian.decorators import permission_required_or_403
+# from django.contrib.auth.decorators import permission_required
 from jobbergate_api.settings import S3_BUCKET, TAR_NAME, APPLICATION_FILE, CONFIG_FILE
 import boto3
 
@@ -48,7 +48,6 @@ def tardir(path,
                     )
     archive.close()
 
-@permission_required_or_403('application.view_obj', (Post, 'slug', 'slug'))
 class ApplicationListView(generics.ListCreateAPIView):
     """
     list view for 'application/'
@@ -57,11 +56,14 @@ class ApplicationListView(generics.ListCreateAPIView):
     serializer_class = ApplicationSerializer
     client = boto3.client('s3')
 
+    # @permission_required('application.delete')
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
+        self.check_object_permissions(self.request, application)
         application.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    # @permission_required('application.create')
     def post(self, request, format=None):
         data = request.data
         parser_class = (FileUploadParser,)
@@ -88,13 +90,20 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'application/<int:pk>'
     '''
     serializer_class = ApplicationSerializer
-
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
+    # @permission_required('applications | application | Can view application')
+    def get(self, request, pk, format=None):
+        application = Application.objects.get(id=pk)
+        self.check_object_permissions(self.request, application)
+        serializer = ApplicationSerializer(application)
+        return Response(serializer.data)
 
+    # @permission_required('application.update')
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
+        self.check_object_permissions(self.request, application)
         obj = self.client.get_object(
             Bucket=S3_BUCKET,
             Key=application.application_location
