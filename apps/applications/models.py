@@ -40,9 +40,6 @@ class Application(models.Model):
         verbose_name = 'application'
         verbose_name_plural = 'applications'
         db_table = 'applications'
-        permissions = (
-            ('applications | application | Can view application', 'Can view object'),
-        )
 
     def __str__(self):
         return self.application_name

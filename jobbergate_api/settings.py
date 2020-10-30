@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    'guardian',
     'apps.user',
     'apps.job_scripts',
     'apps.job_submissions',

@@ -100,12 +100,6 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
-    # # @permission_required('applications | application | Can view application')
-    # def get(self, request, pk, format=None):
-    #     application = Application.objects.get(id=pk)
-    #     serializer = ApplicationSerializer(application)
-    #     return Response(serializer.data)
-
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
         obj = self.client.get_object(
