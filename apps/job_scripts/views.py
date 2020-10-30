@@ -9,6 +9,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
+from rest_framework.permissions import IsAdminUser
 from jobbergate_api.settings import S3_BUCKET
 from jinja2 import Template
 
@@ -27,6 +28,7 @@ class JobScriptListView(generics.ListCreateAPIView):
     """
     queryset = JobScript.objects.all()
     serializer_class = JobScriptSerializer
+    permission_classes = [IsAdminUser]
     client = boto3.client('s3')
 
     def post(self, request, format=None):
@@ -119,6 +121,7 @@ class JobScriptView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'job-script/<int:pk>'
     '''
     serializer_class = JobScriptSerializer
+    permission_classes = [IsAdminUser]
     queryset = JobScript.objects.all()
 
     def put(self, request, pk, format=None):
