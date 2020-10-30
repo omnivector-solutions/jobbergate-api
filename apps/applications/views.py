@@ -7,8 +7,10 @@ from rest_framework.response import Response
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
+
 # from django.contrib.auth.decorators import permission_required
 from jobbergate_api.settings import S3_BUCKET, TAR_NAME, APPLICATION_FILE, CONFIG_FILE
+from jobbergate_api.permissions import ViewObject
 import boto3
 
 from apps.applications.models import Application
@@ -54,12 +56,13 @@ class ApplicationListView(generics.ListCreateAPIView):
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
+    permission_classes = [ViewObject]
     client = boto3.client('s3')
 
     # @permission_required('application.delete')
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
-        self.check_object_permissions(self.request, application)
+        # self.check_object_permissions(self.request, application)
         application.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -90,20 +93,39 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'application/<int:pk>'
     '''
     serializer_class = ApplicationSerializer
+    permission_classes = [ViewObject]
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
     # @permission_required('applications | application | Can view application')
     def get(self, request, pk, format=None):
+        print(request.user)
+        # print(dir(request.user))
+        # print("groups")
+        # print(request.user.groups)
+        # print("has_module_perms")
+        # print(dir(request.user.has_module_perms))
+        # print("get_user_permissions")
+        # print(dir(request.user.get_user_permissions))
+        # print("has_perm")
+        # print(dir(request.user.has_perm))
+        # print("get_all_permissions")
+        # print(dir(request.user.get_all_permissions))
+        # print("get_group_permissions")
+        # print(dir(request.user.get_group_permissions))
+        print("userobjectpermission_set")
+        print(dir(request.user.userobjectpermission_set))
+        print(request.user.userobjectpermission_set)
+
         application = Application.objects.get(id=pk)
-        self.check_object_permissions(self.request, application)
+        # self.check_object_permissions(self.request, application)
         serializer = ApplicationSerializer(application)
         return Response(serializer.data)
 
     # @permission_required('application.update')
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
-        self.check_object_permissions(self.request, application)
+        # self.check_object_permissions(self.request, application)
         obj = self.client.get_object(
             Bucket=S3_BUCKET,
             Key=application.application_location
