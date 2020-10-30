@@ -2,6 +2,7 @@ import ast
 import io
 import tempfile
 import json
+import copy
 
 from django.http import FileResponse
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 from rest_framework.exceptions import ParseError
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import DjangoModelPermissions
 from jobbergate_api.settings import S3_BUCKET
 from jinja2 import Template
 
@@ -22,13 +23,19 @@ from apps.job_scripts.models import JobScript
 from apps.job_scripts.serializers import JobScriptSerializer
 
 
+class CustomDjangoModelPermission(DjangoModelPermissions):
+    def __init__(self):
+        self.perms_map = copy.deepcopy(
+            self.perms_map)  # from EunChong's answer
+        self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
+
 class JobScriptListView(generics.ListCreateAPIView):
     """
     list view for 'job-script/'
     """
     queryset = JobScript.objects.all()
     serializer_class = JobScriptSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [CustomDjangoModelPermission]
     client = boto3.client('s3')
 
     def post(self, request, format=None):
@@ -121,7 +128,7 @@ class JobScriptView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'job-script/<int:pk>'
     '''
     serializer_class = JobScriptSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [CustomDjangoModelPermission]
     queryset = JobScript.objects.all()
 
     def put(self, request, pk, format=None):

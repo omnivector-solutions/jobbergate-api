@@ -2,6 +2,7 @@ import os
 import io
 import yaml
 import tarfile
+import copy
 
 from rest_framework.response import Response
 from rest_framework import generics
@@ -9,12 +10,18 @@ from rest_framework import status
 from rest_framework.parsers import FileUploadParser
 
 from jobbergate_api.settings import S3_BUCKET, TAR_NAME, APPLICATION_FILE, CONFIG_FILE
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import DjangoModelPermissions
 import boto3
 
 from apps.applications.models import Application
 from apps.applications.serializers import ApplicationSerializer
 
+
+class CustomDjangoModelPermission(DjangoModelPermissions):
+    def __init__(self):
+        self.perms_map = copy.deepcopy(
+            self.perms_map)  # from EunChong's answer
+        self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
 
 def get_application(data):
     tar_file = data['upload_file']
@@ -55,7 +62,7 @@ class ApplicationListView(generics.ListCreateAPIView):
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [CustomDjangoModelPermission]
     client = boto3.client('s3')
 
     def delete(self, request, pk, format=None):
@@ -89,7 +96,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     detail view for 'application/<int:pk>'
     '''
     serializer_class = ApplicationSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [CustomDjangoModelPermission]
     queryset = Application.objects.all()
     client = boto3.client('s3')
 
