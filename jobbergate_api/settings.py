@@ -59,12 +59,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    # 'rest_auth',
     'apps.user',
     'apps.job_scripts',
     'apps.job_submissions',
     'apps.applications',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # default
+    'guardian.backends.ObjectPermissionBackend',
+)
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -197,7 +201,7 @@ JWT_AUTH = {
 
 REST_REGISTRATION = {
     'REGISTER_VERIFICATION_ENABLED': True,
-    'REGISTER_EMAIL_VERIFICATION_ENABLED': True,
+    'REGISTER_EMAIL_VERIFICATION_ENABLED': False,
     'RESET_PASSWORD_VERIFICATION_ENABLED': False,
     'VERIFICATION_FROM_EMAIL': "info@omnivector.solutions",
     'REGISTER_VERIFICATION_URL': os.environ['REGISTER_VERIFICATION_URL'],

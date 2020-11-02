@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class Application(models.Model):
     """The application table is used to track information
     about jobbergate applications.
