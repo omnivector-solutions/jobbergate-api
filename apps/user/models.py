@@ -43,7 +43,7 @@ class UserManager(BaseUserManager):
 
 
 class JobbergateEmailValidator(EmailValidator):
-    domain_regex = re.compile('omnivecotor.solutions')
+    domain_regex = re.compile('omnivector.solutions')
 
 
 validate_email = JobbergateEmailValidator(
