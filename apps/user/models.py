@@ -1,6 +1,9 @@
 """Declare models for YOUR_APP app."""
+import os
+import re
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import EmailValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -39,11 +42,24 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
+class JobbergateEmailValidator(EmailValidator):
+    domain_regex = re.compile('omnivecotor.solutions')
+
+
+validate_email = JobbergateEmailValidator(
+    whitelist=[domain for domain in os.environ['VALID_DOMAINS'].split(",")]
+)
+
+
 class User(AbstractUser):
     """User model."""
 
     username = None
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(
+        _('email address'),
+        validators=[validate_email],
+        unique=True,
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
