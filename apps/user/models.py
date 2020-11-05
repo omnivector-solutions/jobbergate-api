@@ -47,7 +47,7 @@ class JobbergateEmailValidator(EmailValidator):
 
 
 validate_email = JobbergateEmailValidator(
-    whitelist=[domain for domain in os.environ['VALID_DOMAINS'].split(",")]
+    whitelist=os.environ['VALID_DOMAINS'].split(",")
 )
 
 
