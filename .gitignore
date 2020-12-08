@@ -15,6 +15,7 @@ _warmup/
 serverless_wsgi.py
 unzip_requirements.py
 wsgi_handler.py
+/*.egg-info
 
 /.vscode/
 /*.code-workspace

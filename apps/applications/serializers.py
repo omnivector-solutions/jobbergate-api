@@ -7,15 +7,15 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = [
-            'id',
-            'application_name',
-            'application_description',
-            'application_location',
-            'application_owner',
-            'application_file',
-            'application_config',
-            'created_at',
-            'updated_at'
+            "id",
+            "application_name",
+            "application_description",
+            "application_location",
+            "application_owner",
+            "application_file",
+            "application_config",
+            "created_at",
+            "updated_at",
         ]
 
     def create(self, validated_data):

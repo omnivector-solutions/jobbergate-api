@@ -1,49 +1,47 @@
 import ast
-import io
-import tempfile
-import json
 import copy
-
-from django.http import FileResponse
-from rest_framework.response import Response
-from rest_framework import generics
-from rest_framework import status
-from rest_framework.parsers import FileUploadParser
-from rest_framework.exceptions import ParseError
-from rest_framework.permissions import DjangoModelPermissions
-from jobbergate_api.settings import S3_BUCKET
-from jinja2 import Template
+import io
+import json
+import tarfile
+import tempfile
 
 import boto3
-import tarfile
-
+from django.http import FileResponse
+from jinja2 import Template
+from rest_framework import generics, status
+from rest_framework.exceptions import ParseError
+from rest_framework.parsers import FileUploadParser
+from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.response import Response
 
 from apps.applications.models import Application
 from apps.job_scripts.models import JobScript
 from apps.job_scripts.serializers import JobScriptSerializer
+from jobbergate_api.settings import S3_BUCKET
 
 
 class CustomDjangoModelPermission(DjangoModelPermissions):
     def __init__(self):
-        self.perms_map = copy.deepcopy(
-            self.perms_map)  # from EunChong's answer
-        self.perms_map['GET'] = ['%(app_label)s.view_%(model_name)s']
+        self.perms_map = copy.deepcopy(self.perms_map)  # from EunChong's answer
+        self.perms_map["GET"] = ["%(app_label)s.view_%(model_name)s"]
+
 
 class JobScriptListView(generics.ListCreateAPIView):
     """
     list view for 'job-script/'
     """
+
     queryset = JobScript.objects.all()
     serializer_class = JobScriptSerializer
     permission_classes = [CustomDjangoModelPermission]
-    client = boto3.client('s3')
+    client = boto3.client("s3")
 
     def post(self, request, format=None):
         data = request.data
         parser_class = (FileUploadParser,)
-        if 'upload_file' not in request.data:
+        if "upload_file" not in request.data:
             raise ParseError("Empty content")
-        param_file = data['upload_file'].read()
+        param_file = data["upload_file"].read()
         dict_str = param_file.decode("UTF-8")
         # param_dict = ast.literal_eval(dict_str)
         param_dict = json.loads(dict_str)
@@ -51,31 +49,29 @@ class JobScriptListView(generics.ListCreateAPIView):
         for key, value in param_dict.items():
             for nest_key, nest_value in param_dict[key].items():
                 param_dict_flat[nest_key] = nest_value
-        application_id = data['application']
+        application_id = data["application"]
 
         application = Application.objects.get(id=application_id)
         obj = self.client.get_object(
-            Bucket=S3_BUCKET,
-            Key=application.application_location
-
+            Bucket=S3_BUCKET, Key=application.application_location
         )
-        buf = io.BytesIO(obj['Body'].read())
+        buf = io.BytesIO(obj["Body"].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}
         try:
-            support_files_ouput = param_dict_flat['supporting_files_output_name']
+            support_files_ouput = param_dict_flat["supporting_files_output_name"]
         except KeyError:
             support_files_ouput = []
 
         try:
-            supporting_files = param_dict_flat['supporting_files']
+            supporting_files = param_dict_flat["supporting_files"]
         except KeyError:
             supporting_files = []
 
         # This is to handle filename OR full path in tar file
         default_template = [
-            param_dict_flat['default_template'],
-            "templates/" + param_dict_flat['default_template']
+            param_dict_flat["default_template"],
+            "templates/" + param_dict_flat["default_template"],
         ]
         for member in tar.getmembers():
             if member.name in default_template:
@@ -88,8 +84,8 @@ class JobScriptListView(generics.ListCreateAPIView):
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
         # Use tempfile to generate .tar in memory - NOT write to disk
-        with tempfile.NamedTemporaryFile('wb', suffix='.tar.gz', delete=False) as f:
-            with tarfile.open(fileobj=f, mode='w:gz') as rendered_tar:
+        with tempfile.NamedTemporaryFile("wb", suffix=".tar.gz", delete=False) as f:
+            with tarfile.open(fileobj=f, mode="w:gz") as rendered_tar:
                 for member in tar.getmembers():
                     if member.name in supporting_files:
                         contentfobj = tar.extractfile(member)
@@ -109,7 +105,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             job_script_data_as_string
             template_files[key] = rendered_js
 
-        data['job_script_data_as_string'] = json.dumps(template_files)
+        data["job_script_data_as_string"] = json.dumps(template_files)
 
         serializer = JobScriptSerializer(data=data)
 
@@ -124,9 +120,10 @@ class JobScriptListView(generics.ListCreateAPIView):
 
 
 class JobScriptView(generics.RetrieveUpdateDestroyAPIView):
-    '''
+    """
     detail view for 'job-script/<int:pk>'
-    '''
+    """
+
     serializer_class = JobScriptSerializer
     permission_classes = [CustomDjangoModelPermission]
     queryset = JobScript.objects.all()

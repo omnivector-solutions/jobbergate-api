@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-
 from apps.applications.models import Application
 
 
@@ -10,19 +9,14 @@ class JobScript(models.Model):
     about job scripts.
     """
 
-    job_script_name = models.CharField(
-        max_length=255
-    )
+    job_script_name = models.CharField(max_length=255)
 
-    job_script_description = models.CharField(
-        max_length=255
-    )
+    job_script_description = models.CharField(max_length=255)
 
     job_script_data_as_string = models.TextField()
 
     job_script_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
 
     application = models.ForeignKey(
@@ -43,10 +37,9 @@ class JobScript(models.Model):
     )
 
     class Meta:
-        verbose_name = 'job_script'
-        verbose_name_plural = 'job_scripts'
-        db_table = 'job_scripts'
+        verbose_name = "job_script"
+        verbose_name_plural = "job_scripts"
+        db_table = "job_scripts"
 
     def __str__(self):
         return self.job_script_name
-

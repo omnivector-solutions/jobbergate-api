@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+
 
 class Application(models.Model):
     """The application table is used to track information
@@ -20,11 +21,9 @@ class Application(models.Model):
         on_delete=models.CASCADE,
     )
 
-    application_file = models.TextField(
-    )
+    application_file = models.TextField()
 
-    application_config = models.TextField(
-    )
+    application_config = models.TextField()
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -37,13 +36,13 @@ class Application(models.Model):
     )
 
     class Meta:
-        verbose_name = 'application'
-        verbose_name_plural = 'applications'
-        db_table = 'applications'
+        verbose_name = "application"
+        verbose_name_plural = "applications"
+        db_table = "applications"
 
     def __str__(self):
         return self.application_name
 
     @property
     def application_location(self):
-        return f"{settings.S3_BASE_PATH}/{str(self.application_owner_id)}/applications/{str(self.id)}/jobbergate.tar.gz" # noqa
+        return f"{settings.S3_BASE_PATH}/{str(self.application_owner_id)}/applications/{str(self.id)}/jobbergate.tar.gz"  # noqa

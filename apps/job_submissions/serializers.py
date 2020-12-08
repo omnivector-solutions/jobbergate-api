@@ -7,14 +7,14 @@ class JobSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobSubmission
         fields = [
-            'id',
-            'job_submission_name',
-            'job_submission_description',
-            'job_submission_owner',
-            'job_script',
-            'slurm_job_id',
-            'created_at',
-            'updated_at'
+            "id",
+            "job_submission_name",
+            "job_submission_description",
+            "job_submission_owner",
+            "job_script",
+            "slurm_job_id",
+            "created_at",
+            "updated_at",
         ]
 
     def create(self, validated_data):

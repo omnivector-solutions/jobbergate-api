@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class JobScriptsConfig(AppConfig):
-    name = 'job_submission'
+    name = "job_submission"
