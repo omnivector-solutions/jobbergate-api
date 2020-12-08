@@ -3,9 +3,7 @@ venv/
 .serverless/
 *.sqlite3
 starccm_app/
-__pycache__/**
-**/__pycache__/**
-**/**/__pycache__/**
+__pycache__/
 .idea
 get-pip.py
 *.DS_Store
@@ -18,3 +16,7 @@ serverless_wsgi.py
 unzip_requirements.py
 wsgi_handler.py
 
+/.vscode/
+/*.code-workspace
+/.coverage
+/_virtual_tmp
