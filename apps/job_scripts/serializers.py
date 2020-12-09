@@ -7,14 +7,14 @@ class JobScriptSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobScript
         fields = [
-            'id',
-            'job_script_name',
-            'job_script_description',
-            'job_script_data_as_string',
-            'job_script_owner',
-            'application',
-            'created_at',
-            'updated_at'
+            "id",
+            "job_script_name",
+            "job_script_description",
+            "job_script_data_as_string",
+            "job_script_owner",
+            "application",
+            "created_at",
+            "updated_at",
         ]
 
     def create(self, validated_data):
