@@ -11,9 +11,9 @@ clean: # Remove .tox and build dirs
 	rm -rf venv/
 
 
-format:
-	isort setup.py jobbergate_api apps --skip-glob '*/[0-9][0-9][0-9][0-9]*.py'
-	black setup.py jobbergate_api apps --exclude '\d{4}.*\.py'
+format: # reformat source python files
+	isort setup.py scripts jobbergate_api apps --skip-glob '*/[0-9][0-9][0-9][0-9]*.py'
+	black setup.py scripts jobbergate_api apps --exclude '\d{4}.*\.py'
 
 
 help: # Display target comments in 'make help'
@@ -24,7 +24,7 @@ lint: # Run linter
 	tox -e lint
 
 
-test:
+test: # run automated tests
 	tox -e unit
 	# TODO: tox -e functional?
 
@@ -34,5 +34,5 @@ requirements/requirements.txt: setup.py
 	. _virtual_tmp/bin/activate \
 		&& pip install wheel \
 		&& pip install . \
-		&& pip freeze > requirements/requirements.txt
+		&& pip freeze | grep -v jobbergate-api > requirements/requirements.txt
 	rm -rf _virtual_tmp

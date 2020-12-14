@@ -17,7 +17,6 @@ inflection==0.5.1
 itypes==1.2.0
 Jinja2==2.11.2
 jmespath==0.10.0
-jobbergate-api==0.1.0+dev
 MarkupSafe==1.1.1
 packaging==20.7
 psycopg2-binary==2.8.6
@@ -30,9 +29,10 @@ requests==2.25.0
 ruamel.yaml==0.16.12
 ruamel.yaml.clib==0.2.2
 s3transfer==0.3.3
-sentry-sdk==0.19.4
+sentry-sdk==0.19.5
 six==1.15.0
 sqlparse==0.4.1
 typing==3.7.4.3
 uritemplate==3.0.1
 urllib3==1.26.2
+Werkzeug==1.0.1

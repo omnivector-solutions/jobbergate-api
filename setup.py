@@ -20,6 +20,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
+        "werkzeug",  # soft-required by the serverless lambda
     ],
     extras_require={
         "dev": [

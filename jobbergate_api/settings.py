@@ -2,7 +2,50 @@ import datetime
 import os
 
 
-SENTRY_DSN = os.environ.get("SENTRY_DSN")
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# REQUIRED environment variables
+SERVERLESS_STAGE = os.environ["STAGE"]
+REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
+SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
+
+
+# OPTIONAL environment variables
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+IS_OFFLINE = os.getenv("LAMBDA_TASK_ROOT") is None  # the serverless runtime sets this
+
+
+# settings when running locally (no serverless runtime)
+if IS_OFFLINE:
+    # Database
+    # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
+
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/3.0/howto/static-files/
+    STATIC_URL = "/static/"
+
+else:  # serverless runtime
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ["DATABASE_NAME"],
+            "USER": os.environ["DATABASE_USER"],
+            "PASSWORD": os.environ["DATABASE_PASS"],
+            "HOST": os.environ["DATABASE_HOST"],
+            "PORT": os.environ["DATABASE_PORT"],
+        }
+    }
+
+    STATIC_URL = "https://{}/".format(os.environ["CLOUDFRONT_DOMAIN"])
+
 
 if SENTRY_DSN:
     import sentry_sdk  # noqa
@@ -18,10 +61,7 @@ if SENTRY_DSN:
     )
 
 
-# Make a way for django to know if we are running in serverless or local
-IS_OFFLINE = os.environ.get("LAMBDA_TASK_ROOT") is None
-
-S3_BUCKET = f'jobbbergate-api-{os.environ["STAGE"]}-resources'
+S3_BUCKET = f"jobbbergate-api-{SERVERLESS_STAGE}-resources"
 
 S3_BASE_PATH = "jobbergate-resources"
 
@@ -30,9 +70,6 @@ TAR_NAME = "/tmp/jobbergate/jobbergate.tar.gz"
 APPLICATION_FILE = "/tmp/jobbergate/jobbergate.py"
 
 CONFIG_FILE = "/tmp/jobbergate/jobbergate.yaml"
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
@@ -48,7 +85,7 @@ ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS = [  # Warning: The order that these get loaded matters, don't reorder
     "drf_yasg",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -66,14 +103,14 @@ INSTALLED_APPS = [
     "apps.applications",
 ]
 
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS = (  # Warning: The order that these get loaded matters, don't reorder
     "django.contrib.auth.backends.ModelBackend",  # default
     "guardian.backends.ObjectPermissionBackend",
 )
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-MIDDLEWARE = [
+MIDDLEWARE = [  # Warning: The order that these get loaded matters, don't reorder
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -106,28 +143,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "jobbergate_api.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-if IS_OFFLINE:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ["DATABASE_NAME"],
-            "USER": os.environ["DATABASE_USER"],
-            "PASSWORD": os.environ["DATABASE_PASS"],
-            "HOST": os.environ["DATABASE_HOST"],
-            "PORT": os.environ["DATABASE_PORT"],
-        }
-    }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
@@ -152,25 +167,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
 STATIC_ROOT = "static/"
-
-if IS_OFFLINE:
-    STATIC_URL = "/static/"
-else:
-    STATIC_URL = "https://{}/".format(os.environ.get("CLOUDFRONT_DOMAIN"))
 
 
 MEDIA_URL = "/media/"
@@ -202,13 +205,11 @@ REST_REGISTRATION = {
     "REGISTER_EMAIL_VERIFICATION_ENABLED": False,
     "RESET_PASSWORD_VERIFICATION_ENABLED": False,
     "VERIFICATION_FROM_EMAIL": "info@omnivector.solutions",
-    "REGISTER_VERIFICATION_URL": os.environ["REGISTER_VERIFICATION_URL"],
+    "REGISTER_VERIFICATION_URL": REGISTER_VERIFICATION_URL,
 }
-
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = "apikey"  # this is exactly the value 'apikey'
-EMAIL_HOST_PASSWORD = os.environ["SENDGRID_API_KEY"]
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
