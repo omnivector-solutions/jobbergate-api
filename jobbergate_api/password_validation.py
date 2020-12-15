@@ -15,7 +15,9 @@ PASSWORD_RX = re.compile(r"^[a-zA-Z0-9]+$")
 class ASCIIRegexValidator:
     def validate(self, password, user=None):
         if not PASSWORD_RX.match(password):
-            raise ValidationError("This password contains disallowed characters: only a-zA-Z0-9 are allowed")
+            raise ValidationError(
+                "This password contains disallowed characters: only a-zA-Z0-9 are allowed"
+            )
 
     def get_help_text(self):
         return _(
