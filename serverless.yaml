@@ -66,8 +66,6 @@ package:
     - media/**
 
 custom:
-  wsgi:
-    app: jobbergate_api.wsgi.application
   warmup:
     enabled: true
   pythonRequirements:

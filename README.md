@@ -44,6 +44,14 @@ tracking jobs and registering applications is performed here.
 
     Edit <your_name>.yaml and change "staging" to your name, throughout.
 
+1. (If necessary) Install docker.
+
+    You can check by running `docker info`, an ERROR appears at the end if
+    it's not running, and you will see `command not found` if it's not
+    installed.
+
+    - [Docker for Mac](https://docs.docker.com/docker-for-mac/install/)
+
 1. Using serverless + cloudformation, deploy your instance to AWS:
 
     ```bash
