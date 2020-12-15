@@ -149,8 +149,11 @@ Open another terminal and try interacting with the API:
 
 ```bash
 endpoint="http://127.0.0.1:8080"
-TOKEN=$(curl --silent -X POST -d "email=bdx@bdx.com&password=bdx" "$endpoint/api-token-auth/" | jq -r '.token')
-curl --silent -H "Authorization: JWT $TOKEN" "$endpoint/users/" | jq
+# substitute your own superuser and password from "Configure Django"
+django_superuser="bdx@bdx.com"
+django_pass="bdx"
+token=$(curl --silent -X POST -d "email=${django_superuser}&password=${django_pass}" "$endpoint/api-token-auth/" | jq -r '.token')
+curl --silent -H "Authorization: JWT $token" "$endpoint/users/" | jq
 ```
 
 The response should look like:
@@ -186,8 +189,11 @@ Similar to the instructions above, but there's no need for `runserver`.
 ```bash
 # Replace "yourname" with the actual name you gave your stack
 endpoint="https://jobbergate-api-yourname.omnivector.solutions"
-TOKEN=$(curl --silent -X POST -d "email=bdx@bdx.com&password=bdx" "$endpoint/api-token-auth/" | jq -r '.token')
-curl --silent -H "Authorization: JWT $TOKEN" "$endpoint/users/" | jq
+# substitute your own superuser and password from "Configure Django"
+django_superuser="bdx@bdx.com"
+django_pass="bdx"
+token=$(curl --silent -X POST -d "email=${django_superuser}&password=${django_pass}" "$endpoint/api-token-auth/" | jq -r '.token')
+curl --silent -H "Authorization: JWT $token" "$endpoint/users/" | jq
 ```
 
 ----
