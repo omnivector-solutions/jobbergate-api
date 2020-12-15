@@ -2,9 +2,7 @@
 
 # export a shell environment suitable for running the django app
 
-import json
 from shlex import quote
-from subprocess import PIPE, STDOUT, run
 
 import boto3
 import click
@@ -13,8 +11,7 @@ import click
 STACK_NAME = "jobbbergate-api-{stage}"
 
 # map the output name to a shell variable name that django wants
-INTERESTING_OUTPUTS = {
-    # these are AWS CF outputs
+AWS_CF_OUTPUTS = {
     "dbName": "DATABASE_NAME",
     "dbHost": "DATABASE_HOST",
     "dbPort": "DATABASE_PORT",
@@ -22,8 +19,9 @@ INTERESTING_OUTPUTS = {
     "dbUser": "DATABASE_USER",
     "dbPass": "DATABASE_PASS",
     "assetsDistribution": "CLOUDFRONT_DOMAIN",
-    # these are from serverless print
-    "STAGE": "STAGE",
+}
+
+AWS_SSM_PARAMETERS = {
     "REGISTER_VERIFICATION_URL": "REGISTER_VERIFICATION_URL",
     "SENDGRID_API_KEY": "SENDGRID_API_KEY",
 }
@@ -38,55 +36,48 @@ def print_export(key, val):
 
 def get_cloudformation_environmentals(stage):
     """
-    key:value of each interesting variable from the cloudformation stack outputs
+    key:value of each variable from the cloudformation stack outputs that we need
     """
     client = boto3.client("cloudformation")
     outputs = client.describe_stacks(StackName=STACK_NAME.format(**locals()))["Stacks"][
         0
     ]["Outputs"]
-    outputs_dict = {}
+    environmentals = {}
     for o in outputs:
         k = o["OutputKey"]
-        if k not in INTERESTING_OUTPUTS:
+        if k not in AWS_CF_OUTPUTS:
             continue
 
         v = o["OutputValue"]
 
-        outputs_dict[INTERESTING_OUTPUTS[k]] = v
+        environmentals[AWS_CF_OUTPUTS[k]] = v
 
-    return outputs_dict
+    return environmentals
 
 
-def get_serverless_environmentals(stage):
+def get_parameterstore_environmentals(stage):
     """
-    key_value of each interesting variable from the serverless print info
+    key:value of each variable from ssm parameter store that we need
     """
-    ret = run(
-        f"npx serverless print --format json --stage {quote(stage)}",
-        shell=True,
-        stderr=STDOUT,
-        stdout=PIPE,
-    )
-    data = json.loads(ret.stdout)["provider"]["environment"]
-    ret = {}
-    for k, v in data.items():
-        if k in INTERESTING_OUTPUTS:
-            ret[k] = v
+    client = boto3.client("ssm")
+    prefix = f"/jobbergate-api/{stage}"
+    environmentals = {}
+    for ssmname, envname in AWS_SSM_PARAMETERS.items():
+        val = client.get_parameter(Name=f"{prefix}/{ssmname}")
+        environmentals[envname] = val["Parameter"]["Value"]
 
-    return ret
+    return environmentals
 
 
 @click.argument("stage")
 @click.command("serverlessenv")
 def main(stage):
     print_export("LAMBDA_TASK_ROOT", f"placeholder-xxx-{stage}")
+    print_export("STAGE", stage)
 
     cf_env = get_cloudformation_environmentals(stage)
-    for k, v in cf_env.items():
-        print_export(k, v)
-
-    sls_env = get_serverless_environmentals(stage)
-    for k, v in sls_env.items():
+    ssm_env = get_parameterstore_environmentals(stage)
+    for k, v in {**cf_env, **ssm_env}.items():
         print_export(k, v)
 
 
