@@ -9,6 +9,7 @@ setup(
     long_description=open("README.md").read(),
     install_requires=[
         "boto3",
+        "click",
         "django",
         "django-cors-headers",
         "django-guardian",
@@ -20,6 +21,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
+        "werkzeug",  # soft-required by the serverless lambda
     ],
     extras_require={
         "dev": [
