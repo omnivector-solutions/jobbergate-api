@@ -9,7 +9,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # REQUIRED environment variables
 SERVERLESS_STAGE = os.environ["STAGE"]
 REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
-SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
 
 
 # OPTIONAL environment variables
@@ -208,8 +207,5 @@ REST_REGISTRATION = {
     "REGISTER_VERIFICATION_URL": REGISTER_VERIFICATION_URL,
 }
 
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_HOST_USER = "apikey"  # this is exactly the value 'apikey'
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+
+EMAIL_BACKEND = "django_ses.SESBackend"

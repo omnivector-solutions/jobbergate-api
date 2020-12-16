@@ -28,7 +28,6 @@ tracking jobs and registering applications is performed here.
     - /jobbergate-api/your_name/DATABASE_PASS
     - /jobbergate-api/your_name/DATABASE_USER
     - /jobbergate-api/your_name/REGISTER_VERIFICATION_URL
-    - /jobbergate-api/your_name/SENDGRID_API_KEY, and
     - /jobbergate-api/your_name/SENTRY_DSN
 
     For the most part you can copy these from `/jobbergate-api/staging/*`.
@@ -161,20 +160,13 @@ endpoint="http://127.0.0.1:8080"
 django_superuser="bdx@bdx.com"
 django_pass="bdx"
 token=$(curl --silent -X POST -d "email=${django_superuser}&password=${django_pass}" "$endpoint/api-token-auth/" | jq -r '.token')
-curl --silent -H "Authorization: JWT $token" "$endpoint/users/" | jq
+curl --silent -H "Authorization: JWT $token" "$endpoint/application/" | jq
 ```
 
 The response should look like:
 
 ```json
-[
-  {
-    "url": "http://127.0.0.1:8080/users/1/",
-    "username": "bdx",
-    "email": "bdx@bdx.com",
-    "is_staff": true
-  }
-]
+[]
 ```
 You should now have access to the API docs:
 
@@ -201,7 +193,7 @@ endpoint="https://jobbergate-api-yourname.omnivector.solutions"
 django_superuser="bdx@bdx.com"
 django_pass="bdx"
 token=$(curl --silent -X POST -d "email=${django_superuser}&password=${django_pass}" "$endpoint/api-token-auth/" | jq -r '.token')
-curl --silent -H "Authorization: JWT $token" "$endpoint/users/" | jq
+curl --silent -H "Authorization: JWT $token" "$endpoint/application/" | jq
 ```
 
 ----

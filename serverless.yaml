@@ -9,6 +9,7 @@ plugins:
   - "serverless-plugin-resource-tagging"
   - "serverless-db-info-plugin"
   - "serverless-single-page-app-plugin"
+
 provider:
   name: "aws"
   region: "us-west-2"
@@ -31,25 +32,13 @@ provider:
       - "subnet-0a7b904695e55d8ed"
       - "subnet-0d4605c10612b0cdb"
 
-#  iamRoleStatements:
-#
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:GetObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "${self:service}-${self:provider.stage}-assets/*"
-#
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:*"
-#      Resource:
-#         Fn::Join:
-#           - ""
-#           - - "arn:aws:s3:::"
-#             - "${self:service}-${self:provider.stage}-resources/*"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - ses:*
+      Resource:
+        - "*"
+
 package:
   exclude:
     - node_modules/**
