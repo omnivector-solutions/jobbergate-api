@@ -14,6 +14,7 @@ REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
 # OPTIONAL environment variables
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 IS_OFFLINE = os.getenv("LAMBDA_TASK_ROOT") is None  # the serverless runtime sets this
+JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv("JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", "").split()
 
 
 # settings when running locally (no serverless runtime)
@@ -107,7 +108,10 @@ AUTHENTICATION_BACKENDS = (  # Warning: The order that these get loaded matters,
     "guardian.backends.ObjectPermissionBackend",
 )
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.omnivector\.solutions$",
+    r"^https://.*\.jobbergate\.io$",
+] + JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES
 
 MIDDLEWARE = [  # Warning: The order that these get loaded matters, don't reorder
     "corsheaders.middleware.CorsMiddleware",
