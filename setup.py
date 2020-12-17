@@ -14,6 +14,7 @@ setup(
         "django-cors-headers",
         "django-guardian",
         "django-rest-registration",
+        "django-ses",
         "djangorestframework",
         "djangorestframework-jwt",
         "drf_yasg",
