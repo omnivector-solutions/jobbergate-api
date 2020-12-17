@@ -1,5 +1,5 @@
 ---
-service: "jobbbergate-api"
+service: "jobbergate-api"
 
 plugins:
   - "serverless-wsgi"
@@ -12,7 +12,7 @@ plugins:
 
 provider:
   name: "aws"
-  region: "us-west-2"
+  region: "eu-north-1"
 
   runtime: "python3.6"
 
@@ -22,15 +22,6 @@ provider:
     Application: "${self:service}-${self:provider.stage}"
 
   environment: "${file(./secrets/${self:provider.stage}.yaml)}"
-
-  vpc:
-    securityGroupIds:
-      - "sg-cfac3d95"
-    subnets:
-      - "subnet-02bc060304e2d7916"
-      - "subnet-0881906e33eb25bc0"
-      - "subnet-0a7b904695e55d8ed"
-      - "subnet-0d4605c10612b0cdb"
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -82,27 +73,28 @@ functions:
     timeout: 60
     vpc:
       securityGroupIds:
-        - sg-cfac3d95
+        - sg-0734d573f35d588b3
       subnetIds:
-        - subnet-02bc060304e2d7916
-        - subnet-0881906e33eb25bc0
-        - subnet-0a7b904695e55d8ed
-        - subnet-0d4605c10612b0cdb
+        - subnet-0404e360527928905
+        - subnet-0eef4b21da85112b0
+        - subnet-0d0a84da107738d97
 
 resources:
   Conditions:
     # The production-tmp exception is to allow a/b deployments
     # to production after making major breaking changes.
     IsProd: !Or
-      - !Equals ["${self:provider.stage}", production]
-      - !Equals ["${self:provider.stage}", production-tmp]
+      - !Equals ["${self:provider.stage}", prod]
+      - !Equals ["${self:provider.stage}", eu-prod]
+      - !Equals ["${self:provider.stage}", prod-tmp]
 
   Resources:
     APILoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${self:service}-${self:provider.stage}-alb
-        SecurityGroups: ${self:provider.vpc.securityGroupIds}
+        SecurityGroups:
+          - sg-0734d573f35d588b3
         Scheme:
           !If
           - IsProd
@@ -111,14 +103,12 @@ resources:
         Subnets:  # IGW subnets for production, else security partner VPN
           !If
           - IsProd
-          - - subnet-0003408a6902f687c
-            - subnet-041383d708bea30f0
-            - subnet-0bb2a9d64b97da670
-            - subnet-0f882bf41d65b52c9
-          - - subnet-02bc060304e2d7916
-            - subnet-0881906e33eb25bc0
-            - subnet-0a7b904695e55d8ed
-            - subnet-0d4605c10612b0cdb
+          - - subnet-0f77837e377c9f43e
+            - subnet-0cf24701a8e5f511b
+            - subnet-09d9016290e015cf8
+          - - subnet-0404e360527928905
+            - subnet-0eef4b21da85112b0
+            - subnet-0d0a84da107738d97
 
     APIHTTPListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -226,7 +216,7 @@ resources:
                 AWS:
                   Fn::Join:
                     - ""
-                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
+                    - - "arn:aws:iam::212021838531:role/jobbergate-api-"
                       - "${self:provider.stage}-"
                       - "${self:provider.region}-"
                       - "lambdaRole"
@@ -259,20 +249,20 @@ resources:
         DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
         DBSubnetGroupDescription: Aurora SubnetGroup
         SubnetIds:
-          - subnet-02bc060304e2d7916
-          - subnet-0881906e33eb25bc0
-          - subnet-0a7b904695e55d8ed
-          - subnet-0d4605c10612b0cdb
+          - subnet-0404e360527928905
+          - subnet-0eef4b21da85112b0
+          - subnet-0d0a84da107738d97
 
     AuroraClusterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: "Allow ingress from our vpc subnet cidrs on 5432."
+        VpcId: vpc-0fefba92e3234acb9
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 5432
             ToPort: 5432
-            CidrIp: 172.31.0.0/16
+            CidrIp: 10.251.0.0/20
 
     AuroraInstance:
       Type: AWS::RDS::DBInstance
