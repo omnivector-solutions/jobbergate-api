@@ -10,6 +10,7 @@ plugins:
   - "serverless-db-info-plugin"
   - "serverless-single-page-app-plugin"
 
+
 provider:
   name: "aws"
   region: "eu-north-1"
@@ -21,7 +22,7 @@ provider:
   stackTags:
     Application: "${self:service}-${self:provider.stage}"
 
-  environment: "${file(./secrets/${self:provider.stage}.yaml)}"
+  environment: "${file(./include/${self:provider.region}/stage/${self:provider.stage}.yaml)}"
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -71,44 +72,20 @@ functions:
 
     memorySize: 512
     timeout: 60
-    vpc:
-      securityGroupIds:
-        - sg-0734d573f35d588b3
-      subnetIds:
-        - subnet-0404e360527928905
-        - subnet-0eef4b21da85112b0
-        - subnet-0d0a84da107738d97
+    vpc: ${file(./include/${self:provider.region}/vpc.js)}
+
 
 resources:
-  Conditions:
-    # The production-tmp exception is to allow a/b deployments
-    # to production after making major breaking changes.
-    IsProd: !Or
-      - !Equals ["${self:provider.stage}", prod]
-      - !Equals ["${self:provider.stage}", eu-prod]
-      - !Equals ["${self:provider.stage}", prod-tmp]
-
   Resources:
     APILoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${self:service}-${self:provider.stage}-alb
         SecurityGroups:
-          - sg-0734d573f35d588b3
-        Scheme:
-          !If
-          - IsProd
-          - internet-facing
-          - internal
+          ${self:functions.api.vpc.securityGroupIds}
+        Scheme: ${self:functions.api.vpc.albScheme}
         Subnets:  # IGW subnets for production, else security partner VPN
-          !If
-          - IsProd
-          - - subnet-0f77837e377c9f43e
-            - subnet-0cf24701a8e5f511b
-            - subnet-09d9016290e015cf8
-          - - subnet-0404e360527928905
-            - subnet-0eef4b21da85112b0
-            - subnet-0d0a84da107738d97
+          ${self:functions.api.vpc.subnetIds}
 
     APIHTTPListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -313,4 +290,3 @@ resources:
     assetsDistribution:
       Value:
         'Fn::GetAtt': [ AssetsDistribution, DomainName ]
-
