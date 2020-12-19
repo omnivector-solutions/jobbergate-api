@@ -19,29 +19,29 @@ tracking jobs and registering applications is performed here.
     pip install -r requirements/requirements.txt
     ```
 
-1. In AWS Systems Manager/Parameter Store, you need to create some parameters.
-
-    For each parameter, replace your_name with a new unique name (probably
-    your name). These are the parameters you're creating:
-
-    - /jobbergate-api/your_name/DATABASE_NAME
-    - /jobbergate-api/your_name/DATABASE_PASS
-    - /jobbergate-api/your_name/DATABASE_USER
-    - /jobbergate-api/your_name/REGISTER_VERIFICATION_URL
-    - /jobbergate-api/your_name/SENTRY_DSN
-
-    For the most part you can copy these from `/jobbergate-api/staging/*`.
-
-1. Install OpenVPN software, and confirm that you can succesfully connect to the `.ovpn` config.
-
-   **Your development environment at https://jobbergate-api-YOURNAME.omnivector.solutions is NOT reachable without a VPN connection into AWS.**
-
-1. Create a file under secrets/ with your correct stack info in it.
+1. Create a file under include/ with your correct stack info in it.
     ```bash
-    cp secrets/staging.yaml secrets/<your_name>.yaml
+    cp include/us-west-2/staging.yaml include/us-west-2/<your_name>.yaml
+    # you may also use eu-north-1 instead
     ```
 
     Edit <your_name>.yaml and change "staging" to your name, throughout.
+
+1. In AWS Systems Manager/Parameter Store, you need to create some parameters.
+
+    ```bash
+    # change your_name to the same name you used to create the yaml file
+    ./scripts/ssmparameters.py <your_name>
+    # if you are using eu-north-1, you will want to add a region flag:
+    # ./scripts/ssmparameters.py <your_name> --region eu-north-1
+    ```
+
+    If you're not sure what the values should be, copy them from the current
+    values in AWS SSM under `/jobbergate-api/staging/*`.
+
+1. Install OpenVPN software, and confirm that you can succesfully connect to the `.ovpn` config.
+
+   **Your development environment at https://jobbergate-api-YOURNAME-us-west-2.omnivector.solutions is NOT reachable without a VPN connection into AWS.**
 
 1. (If necessary) Install docker.
 
@@ -188,7 +188,7 @@ Similar to the instructions above, but there's no need for `runserver`.
 
 ```bash
 # Replace "yourname" with the actual name you gave your stack
-endpoint="https://jobbergate-api-yourname.omnivector.solutions"
+endpoint="https://jobbergate-api-yourname-us-west-2.omnivector.solutions"
 # substitute your own superuser and password from "Configure Django"
 django_superuser="bdx@bdx.com"
 django_pass="bdx"

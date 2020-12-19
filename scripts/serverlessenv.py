@@ -8,7 +8,7 @@ import boto3
 import click
 
 
-STACK_NAME = "jobbbergate-api-{stage}"
+STACK_NAME = "jobbergate-api-{stage}"
 
 # map the output name to a shell variable name that django wants
 AWS_CF_OUTPUTS = {

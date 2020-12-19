@@ -1,5 +1,6 @@
 var vpcData = {
     public: {
+        vpcId: "vpc-9653c9ee",
         securityGroupIds: ["sg-cfac3d95"],
         subnetIds: [
             "subnet-02bc060304e2d7916",
@@ -7,9 +8,11 @@ var vpcData = {
             "subnet-0a7b904695e55d8ed",
             "subnet-0d4605c10612b0cdb"
         ],
-        albScheme: "internet-facing"
+        albScheme: "internet-facing",
+        auroraClusterCidrIp: "172.31.0.0/16"
     },
     internal: {
+        vpcId: "vpc-9653c9ee",
         securityGroupIds: ["sg-cfac3d95"],
         subnetIds: [
             "subnet-02bc060304e2d7916",
@@ -17,7 +20,8 @@ var vpcData = {
             "subnet-0a7b904695e55d8ed",
             "subnet-0d4605c10612b0cdb"
         ],
-        albScheme: "internal"
+        albScheme: "internal",
+        auroraClusterCidrIp: "172.31.0.0/16"
     }
 };
 

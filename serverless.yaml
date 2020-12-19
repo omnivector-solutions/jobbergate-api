@@ -123,7 +123,7 @@ resources:
           DNSName: !GetAtt APILoadBalancer.DNSName
           HostedZoneId: !GetAtt APILoadBalancer.CanonicalHostedZoneID
 
-    # NOTE: For new certicates a manual verificiation step may be necessary to
+    # NOTE: For new certicates a manual verification step may be necessary to
     # verify domain ownership. More info:
     # https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html
     APIHTTPSCert:
@@ -180,7 +180,7 @@ resources:
       Properties:
         BucketName: ${self:custom.s3ResourcesBucket}
 
-    ResourcessBucketPolicy:
+    ResourcesBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
         Bucket:
@@ -226,20 +226,18 @@ resources:
         DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
         DBSubnetGroupDescription: Aurora SubnetGroup
         SubnetIds:
-          - subnet-0404e360527928905
-          - subnet-0eef4b21da85112b0
-          - subnet-0d0a84da107738d97
+          ${self:functions.api.vpc.subnetIds}
 
     AuroraClusterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: "Allow ingress from our vpc subnet cidrs on 5432."
-        VpcId: vpc-0fefba92e3234acb9
+        VpcId: ${self:functions.api.vpc.vpcId}
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 5432
             ToPort: 5432
-            CidrIp: 10.251.0.0/20
+            CidrIp: ${self:functions.api.vpc.auroraClusterCidrIp}
 
     AuroraInstance:
       Type: AWS::RDS::DBInstance

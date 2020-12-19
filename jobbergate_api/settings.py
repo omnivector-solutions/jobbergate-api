@@ -61,7 +61,7 @@ if SENTRY_DSN:
     )
 
 
-S3_BUCKET = f"jobbbergate-api-{SERVERLESS_STAGE}-resources"
+S3_BUCKET = f"jobbergate-api-{SERVERLESS_STAGE}-resources"
 
 S3_BASE_PATH = "jobbergate-resources"
 
