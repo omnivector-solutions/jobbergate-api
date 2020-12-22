@@ -81,7 +81,8 @@ The steps are as follows:
 
 
 # Set REQUIRED env vars, for this shell session
-eval $(./scripts/serverlessenv.py your_name)
+eval $(./scripts/serverlessenv.py your_name)  # important: add --region eu-north-1 unless
+                                              # you want the default us-west-2!
 
 
 # Publish static files to the cloud
@@ -100,13 +101,13 @@ npx serverless syncToS3 --stage your_name
 
 As usual with Django, if you change models you must run `makemigrations` and `migrate` again.
 
-The only difference: make sure to eval `serverlessenv.py` first, as shown above.
+The only difference: make sure to eval `serverlessenv.py` first, as shown above. Don't forget the `--region`.
 
 
 ### Other tips: Create database object using django shell
 
 ```bash
-$ eval $(scripts/serverlessenv.py your_name)
+$ eval $(scripts/serverlessenv.py your_name)  # add --region if necessary
 $ ./manage.py shell
 ```
 
@@ -144,7 +145,7 @@ either way. To run in localhost mode there is one additional step below._
 
 
 ```bash
-eval $(./scripts/serverlessenv.py your_name)
+eval $(./scripts/serverlessenv.py your_name)  # add --region if necessary
 unset LAMBDA_TASK_ROOT  # when this is set -> management in the cloud.
                         # unset -> management is local.
 ./manage.py runserver 0:8080

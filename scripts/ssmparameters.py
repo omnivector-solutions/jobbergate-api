@@ -2,14 +2,13 @@
 """
 Edit AWS SSM parameters in a text editor and save them
 """
+import inspect
 import secrets
 import string
 import sys
 
-import inspect
-
-from botocore.exceptions import ClientError
 import boto3
+from botocore.exceptions import ClientError
 import click
 from codado import hotedit
 import toml
@@ -25,7 +24,8 @@ PARAM_KEYS = (
     "SENTRY_DSN",
 )
 
-PARAM_TEMPLATE = inspect.cleandoc("""
+PARAM_TEMPLATE = inspect.cleandoc(
+    """
     # {region} / {stage}
 
     [ssm]
@@ -34,11 +34,12 @@ PARAM_TEMPLATE = inspect.cleandoc("""
     DATABASE_USER = {DATABASE_USER!a}
     REGISTER_VERIFICATION_URL = {REGISTER_VERIFICATION_URL!a}
     SENTRY_DSN = {SENTRY_DSN!a}
-    """)
+    """
+)
 
 REGION_CHOICES = (
-    'us-west-2',
-    'eu-north-1',
+    "us-west-2",
+    "eu-north-1",
 )
 
 
@@ -46,7 +47,7 @@ def make_password(charset=PASSWORD_CHARS):
     """
     Generate a secure password
     """
-    return ''.join(secrets.choice(charset) for i in range(20))
+    return "".join(secrets.choice(charset) for i in range(20))
 
 
 def read_upstream(client, stage):
@@ -118,7 +119,7 @@ def ssmparameters(ctx: click.Context, region, stage):
 
         new_data = toml.loads(new_file)
         # sanity check that we've only seen the keys we want to see
-        check_keys = sorted(new_data.get('ssm', {}).keys())
+        check_keys = sorted(new_data.get("ssm", {}).keys())
         if not check_keys == sorted(PARAM_KEYS):
             click.echo(f"** Error: some unexpected parameters (saw: {check_keys})")
             if click.confirm("Try again?"):
@@ -129,7 +130,7 @@ def ssmparameters(ctx: click.Context, region, stage):
 
         break
 
-    for _ in save_upstream(client, stage, new_data['ssm']):
+    for _ in save_upstream(client, stage, new_data["ssm"]):
         click.echo(".", nl=False)
     click.echo("Saved.")
 

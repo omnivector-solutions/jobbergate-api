@@ -208,7 +208,7 @@ resources:
         DistributionConfig:
           Origins:
             - Id: Assets
-              DomainName: ${self:custom.s3Bucket}.s3.us-west-2.amazonaws.com
+              DomainName: ${self:custom.s3Bucket}.s3.${self:provider.region}.amazonaws.com
               S3OriginConfig: {}
           DefaultCacheBehavior:
             TargetOriginId: Assets
