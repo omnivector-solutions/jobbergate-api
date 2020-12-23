@@ -21,27 +21,19 @@ tracking jobs and registering applications is performed here.
 
 1. In AWS Systems Manager/Parameter Store, you need to create some parameters.
 
-    For each parameter, replace your_name with a new unique name (probably
-    your name). These are the parameters you're creating:
+    ```bash
+    # change your_name to a unique name for your dev environment (perhaps your first name?)
+    ./scripts/ssmparameters.py <your_name>
+    # if you are using eu-north-1, you will want to add a region flag:
+    # ./scripts/ssmparameters.py <your_name> --region eu-north-1
+    ```
 
-    - /jobbergate-api/your_name/DATABASE_NAME
-    - /jobbergate-api/your_name/DATABASE_PASS
-    - /jobbergate-api/your_name/DATABASE_USER
-    - /jobbergate-api/your_name/REGISTER_VERIFICATION_URL
-    - /jobbergate-api/your_name/SENTRY_DSN
-
-    For the most part you can copy these from `/jobbergate-api/staging/*`.
+    If you're not sure what the values should be, copy them from the current
+    Parameters in AWS SSM under `/jobbergate-api/staging/*`.
 
 1. Install OpenVPN software, and confirm that you can succesfully connect to the `.ovpn` config.
 
-   **Your development environment at https://jobbergate-api-YOURNAME.omnivector.solutions is NOT reachable without a VPN connection into AWS.**
-
-1. Create a file under secrets/ with your correct stack info in it.
-    ```bash
-    cp secrets/staging.yaml secrets/<your_name>.yaml
-    ```
-
-    Edit <your_name>.yaml and change "staging" to your name, throughout.
+   **Your development environment at https://jobbergate-api-YOURNAME-us-west-2.omnivector.solutions is NOT reachable without a VPN connection into AWS.**
 
 1. (If necessary) Install docker.
 
@@ -54,7 +46,7 @@ tracking jobs and registering applications is performed here.
 1. Using serverless + cloudformation, deploy your instance to AWS:
 
     ```bash
-    npx serverless deploy --stage your_name
+    npx serverless deploy --stage your_name  # with --region if necessary
     ```
 
     **IMPORTANT**: You must visit
@@ -81,12 +73,13 @@ The steps are as follows:
 
 
 # Set REQUIRED env vars, for this shell session
-eval $(./scripts/serverlessenv.py your_name)
+eval $(./scripts/serverlessenv.py your_name)  # important: add --region eu-north-1 unless
+                                              # you want the default us-west-2!
 
 
 # Publish static files to the cloud
 ./manage.py collectstatic --noinput
-npx serverless syncToS3 --stage your_name
+npx serverless syncToS3 --stage your_name  # with --region if necessary
 
 # Prepare schema migration:
 ./manage.py migrate
@@ -100,13 +93,13 @@ npx serverless syncToS3 --stage your_name
 
 As usual with Django, if you change models you must run `makemigrations` and `migrate` again.
 
-The only difference: make sure to eval `serverlessenv.py` first, as shown above.
+The only difference: make sure to eval `serverlessenv.py` first, as shown above. Don't forget the `--region`.
 
 
 ### Other tips: Create database object using django shell
 
 ```bash
-$ eval $(scripts/serverlessenv.py your_name)
+$ eval $(scripts/serverlessenv.py your_name)  # add --region if necessary
 $ ./manage.py shell
 ```
 
@@ -144,7 +137,7 @@ either way. To run in localhost mode there is one additional step below._
 
 
 ```bash
-eval $(./scripts/serverlessenv.py your_name)
+eval $(./scripts/serverlessenv.py your_name)  # add --region if necessary
 unset LAMBDA_TASK_ROOT  # when this is set -> management in the cloud.
                         # unset -> management is local.
 ./manage.py runserver 0:8080
@@ -188,7 +181,7 @@ Similar to the instructions above, but there's no need for `runserver`.
 
 ```bash
 # Replace "yourname" with the actual name you gave your stack
-endpoint="https://jobbergate-api-yourname.omnivector.solutions"
+endpoint="https://jobbergate-api-yourname-us-west-2.omnivector.solutions"
 # substitute your own superuser and password from "Configure Django"
 django_superuser="bdx@bdx.com"
 django_pass="bdx"

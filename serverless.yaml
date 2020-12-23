@@ -1,5 +1,5 @@
 ---
-service: "jobbbergate-api"
+service: "jobbergate-api"
 
 plugins:
   - "serverless-wsgi"
@@ -10,27 +10,18 @@ plugins:
   - "serverless-db-info-plugin"
   - "serverless-single-page-app-plugin"
 
+
 provider:
   name: "aws"
-  region: "us-west-2"
-
   runtime: "python3.6"
 
+  region: "${opt:region, 'us-west-2'}"
   stage: "${opt:stage, 'staging'}"
 
   stackTags:
     Application: "${self:service}-${self:provider.stage}"
 
-  environment: "${file(./secrets/${self:provider.stage}.yaml)}"
-
-  vpc:
-    securityGroupIds:
-      - "sg-cfac3d95"
-    subnets:
-      - "subnet-02bc060304e2d7916"
-      - "subnet-0881906e33eb25bc0"
-      - "subnet-0a7b904695e55d8ed"
-      - "subnet-0d4605c10612b0cdb"
+  environment: "${file(./include/env.yaml)}"
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -67,8 +58,8 @@ custom:
     pythonBin: "python3"
     fileName: "requirements/requirements.txt"
 
-  s3Bucket: "${self:service}-${self:provider.stage}-assets"
-  s3ResourcesBucket: "${self:service}-${self:provider.stage}-resources"
+  s3Bucket: "${self:service}-${self:provider.stage}-${self:provider.region}-assets"
+  s3ResourcesBucket: "${self:service}-${self:provider.stage}-${self:provider.region}-resources"
   s3LocalPath: "static/"
 
 
@@ -80,45 +71,20 @@ functions:
 
     memorySize: 512
     timeout: 60
-    vpc:
-      securityGroupIds:
-        - sg-cfac3d95
-      subnetIds:
-        - subnet-02bc060304e2d7916
-        - subnet-0881906e33eb25bc0
-        - subnet-0a7b904695e55d8ed
-        - subnet-0d4605c10612b0cdb
+    vpc: ${file(./include/${self:provider.region}/vpc.js)}
+
 
 resources:
-  Conditions:
-    # The production-tmp exception is to allow a/b deployments
-    # to production after making major breaking changes.
-    IsProd: !Or
-      - !Equals ["${self:provider.stage}", production]
-      - !Equals ["${self:provider.stage}", production-tmp]
-
   Resources:
     APILoadBalancer:
       Type: AWS::ElasticLoadBalancingV2::LoadBalancer
       Properties:
         Name: ${self:service}-${self:provider.stage}-alb
-        SecurityGroups: ${self:provider.vpc.securityGroupIds}
-        Scheme:
-          !If
-          - IsProd
-          - internet-facing
-          - internal
+        SecurityGroups:
+          ${self:functions.api.vpc.securityGroupIds}
+        Scheme: ${self:functions.api.vpc.albScheme}
         Subnets:  # IGW subnets for production, else security partner VPN
-          !If
-          - IsProd
-          - - subnet-0003408a6902f687c
-            - subnet-041383d708bea30f0
-            - subnet-0bb2a9d64b97da670
-            - subnet-0f882bf41d65b52c9
-          - - subnet-02bc060304e2d7916
-            - subnet-0881906e33eb25bc0
-            - subnet-0a7b904695e55d8ed
-            - subnet-0d4605c10612b0cdb
+          ${self:functions.api.vpc.subnetIds}
 
     APIHTTPListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -150,13 +116,13 @@ resources:
       Properties:
         HostedZoneName: omnivector.solutions.
         # NOTE: The production jobbergate-api.omnivector.solutions record is manually managed
-        Name: jobbergate-api-${self:provider.stage}.omnivector.solutions
+        Name: jobbergate-api-${self:provider.stage}-${self:provider.region}.omnivector.solutions
         Type: A
         AliasTarget:
           DNSName: !GetAtt APILoadBalancer.DNSName
           HostedZoneId: !GetAtt APILoadBalancer.CanonicalHostedZoneID
 
-    # NOTE: For new certicates a manual verificiation step may be necessary to
+    # NOTE: For new certicates a manual verification step may be necessary to
     # verify domain ownership. More info:
     # https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html
     APIHTTPSCert:
@@ -165,7 +131,7 @@ resources:
         DomainName: !Ref APIRecordSet
         ValidationMethod: DNS
         SubjectAlternativeNames:
-          - jobbergate-api-${self:provider.stage}.omnivector.solutions
+          - jobbergate-api-${self:provider.stage}-${self:provider.region}.omnivector.solutions
 
     APITargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -213,7 +179,7 @@ resources:
       Properties:
         BucketName: ${self:custom.s3ResourcesBucket}
 
-    ResourcessBucketPolicy:
+    ResourcesBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
         Bucket:
@@ -226,7 +192,7 @@ resources:
                 AWS:
                   Fn::Join:
                     - ""
-                    - - "arn:aws:iam::212021838531:role/jobbbergate-api-"
+                    - - "arn:aws:iam::212021838531:role/jobbergate-api-"
                       - "${self:provider.stage}-"
                       - "${self:provider.region}-"
                       - "lambdaRole"
@@ -241,7 +207,7 @@ resources:
         DistributionConfig:
           Origins:
             - Id: Assets
-              DomainName: ${self:custom.s3Bucket}.s3.us-west-2.amazonaws.com
+              DomainName: ${self:custom.s3Bucket}.s3.${self:provider.region}.amazonaws.com
               S3OriginConfig: {}
           DefaultCacheBehavior:
             TargetOriginId: Assets
@@ -259,20 +225,18 @@ resources:
         DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
         DBSubnetGroupDescription: Aurora SubnetGroup
         SubnetIds:
-          - subnet-02bc060304e2d7916
-          - subnet-0881906e33eb25bc0
-          - subnet-0a7b904695e55d8ed
-          - subnet-0d4605c10612b0cdb
+          ${self:functions.api.vpc.subnetIds}
 
     AuroraClusterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: "Allow ingress from our vpc subnet cidrs on 5432."
+        VpcId: ${self:functions.api.vpc.vpcId}
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 5432
             ToPort: 5432
-            CidrIp: 172.31.0.0/16
+            CidrIp: ${self:functions.api.vpc.auroraClusterCidrIp}
 
     AuroraInstance:
       Type: AWS::RDS::DBInstance
@@ -323,4 +287,3 @@ resources:
     assetsDistribution:
       Value:
         'Fn::GetAtt': [ AssetsDistribution, DomainName ]
-

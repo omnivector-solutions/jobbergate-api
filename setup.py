@@ -10,6 +10,7 @@ setup(
     install_requires=[
         "boto3",
         "click",
+        "codado",
         "django",
         "django-cors-headers",
         "django-guardian",
@@ -22,6 +23,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
+        "tomlkit",
         "werkzeug",  # soft-required by the serverless lambda
     ],
     extras_require={

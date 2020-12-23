@@ -2,13 +2,19 @@
 
 # export a shell environment suitable for running the django app
 
+import os
 from shlex import quote
 
 import boto3
 import click
 
 
-STACK_NAME = "jobbbergate-api-{stage}"
+REGION_CHOICES = (
+    "us-west-2",
+    "eu-north-1",
+)
+
+STACK_NAME = "jobbergate-api-{stage}"
 
 # map the output name to a shell variable name that django wants
 AWS_CF_OUTPUTS = {
@@ -68,11 +74,17 @@ def get_parameterstore_environmentals(stage):
     return environmentals
 
 
-@click.argument("stage")
+@click.option("--region", "-r", default="us-west-2", type=click.Choice(REGION_CHOICES))
+@click.argument("stage", type=str)
 @click.command("serverlessenv")
-def main(stage):
+def main(region, stage):
+    print_export("AWS_DEFAULT_REGION", region)
     print_export("LAMBDA_TASK_ROOT", f"placeholder-xxx-{stage}")
-    print_export("STAGE", stage)
+    print_export("SERVERLESS_STAGE", stage)
+    print_export("SERVERLESS_REGION", region)
+
+    # boto calls after this point will use the correct region
+    os.environ["AWS_DEFAULT_REGION"] = region
 
     cf_env = get_cloudformation_environmentals(stage)
     ssm_env = get_parameterstore_environmentals(stage)

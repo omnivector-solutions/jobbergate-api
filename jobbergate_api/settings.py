@@ -7,7 +7,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # REQUIRED environment variables
-SERVERLESS_STAGE = os.environ["STAGE"]
+SERVERLESS_STAGE = os.environ["SERVERLESS_STAGE"]
+SERVERLESS_REGION = os.environ["SERVERLESS_REGION"]
 REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
 
 
@@ -61,7 +62,7 @@ if SENTRY_DSN:
     )
 
 
-S3_BUCKET = f"jobbbergate-api-{SERVERLESS_STAGE}-resources"
+S3_BUCKET = f"jobbergate-api-{SERVERLESS_STAGE}-{SERVERLESS_REGION}-resources"
 
 S3_BASE_PATH = "jobbergate-resources"
 
