@@ -80,7 +80,8 @@ def get_parameterstore_environmentals(stage):
 def main(region, stage):
     print_export("AWS_DEFAULT_REGION", region)
     print_export("LAMBDA_TASK_ROOT", f"placeholder-xxx-{stage}")
-    print_export("STAGE", stage)
+    print_export("SERVERLESS_STAGE", stage)
+    print_export("SERVERLESS_REGION", region)
 
     # boto calls after this point will use the correct region
     os.environ["AWS_DEFAULT_REGION"] = region
