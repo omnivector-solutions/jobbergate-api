@@ -13,16 +13,15 @@ plugins:
 
 provider:
   name: "aws"
-  region: "eu-north-1"
-
   runtime: "python3.6"
 
+  region: "${opt:region, 'us-west-2'}"
   stage: "${opt:stage, 'staging'}"
 
   stackTags:
     Application: "${self:service}-${self:provider.stage}"
 
-  environment: "${file(./include/${self:provider.region}/stage/${self:provider.stage}.yaml)}"
+  environment: "${file(./include/env.yaml)}"
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -59,8 +58,8 @@ custom:
     pythonBin: "python3"
     fileName: "requirements/requirements.txt"
 
-  s3Bucket: "${self:service}-${self:provider.stage}-assets"
-  s3ResourcesBucket: "${self:service}-${self:provider.stage}-resources"
+  s3Bucket: "${self:service}-${self:provider.stage}-${self:provider.region}-assets"
+  s3ResourcesBucket: "${self:service}-${self:provider.stage}-${self:provider.region}-resources"
   s3LocalPath: "static/"
 
 
@@ -117,7 +116,7 @@ resources:
       Properties:
         HostedZoneName: omnivector.solutions.
         # NOTE: The production jobbergate-api.omnivector.solutions record is manually managed
-        Name: jobbergate-api-${self:provider.stage}.omnivector.solutions
+        Name: jobbergate-api-${self:provider.stage}-${self:provider.region}.omnivector.solutions
         Type: A
         AliasTarget:
           DNSName: !GetAtt APILoadBalancer.DNSName
@@ -132,7 +131,7 @@ resources:
         DomainName: !Ref APIRecordSet
         ValidationMethod: DNS
         SubjectAlternativeNames:
-          - jobbergate-api-${self:provider.stage}.omnivector.solutions
+          - jobbergate-api-${self:provider.stage}-${self:provider.region}.omnivector.solutions
 
     APITargetGroup:
       Type: AWS::ElasticLoadBalancingV2::TargetGroup

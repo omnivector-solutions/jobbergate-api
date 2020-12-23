@@ -19,25 +19,17 @@ tracking jobs and registering applications is performed here.
     pip install -r requirements/requirements.txt
     ```
 
-1. Create a file under include/ with your correct stack info in it.
-    ```bash
-    cp include/us-west-2/staging.yaml include/us-west-2/<your_name>.yaml
-    # you may also use eu-north-1 instead
-    ```
-
-    Edit <your_name>.yaml and change "staging" to your name, throughout.
-
 1. In AWS Systems Manager/Parameter Store, you need to create some parameters.
 
     ```bash
-    # change your_name to the same name you used to create the yaml file
+    # change your_name to a unique name for your dev environment (perhaps your first name?)
     ./scripts/ssmparameters.py <your_name>
     # if you are using eu-north-1, you will want to add a region flag:
     # ./scripts/ssmparameters.py <your_name> --region eu-north-1
     ```
 
     If you're not sure what the values should be, copy them from the current
-    values in AWS SSM under `/jobbergate-api/staging/*`.
+    Parameters in AWS SSM under `/jobbergate-api/staging/*`.
 
 1. Install OpenVPN software, and confirm that you can succesfully connect to the `.ovpn` config.
 
@@ -54,7 +46,7 @@ tracking jobs and registering applications is performed here.
 1. Using serverless + cloudformation, deploy your instance to AWS:
 
     ```bash
-    npx serverless deploy --stage your_name
+    npx serverless deploy --stage your_name  # with --region if necessary
     ```
 
     **IMPORTANT**: You must visit
@@ -87,7 +79,7 @@ eval $(./scripts/serverlessenv.py your_name)  # important: add --region eu-north
 
 # Publish static files to the cloud
 ./manage.py collectstatic --noinput
-npx serverless syncToS3 --stage your_name
+npx serverless syncToS3 --stage your_name  # with --region if necessary
 
 # Prepare schema migration:
 ./manage.py migrate
