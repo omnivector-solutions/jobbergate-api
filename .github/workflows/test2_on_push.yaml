@@ -1,6 +1,6 @@
-name: 'Test 2'
+name: 'Test manual'
 
-on: push
+on: workflow_dispatch
 
 jobs:
   test:
