@@ -1,9 +1,0 @@
-name: 'TestWorkflow'
-on: workflow_dispatch
-
-jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    steps:
-        - run: |
-            ls -l
