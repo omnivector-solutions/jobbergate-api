@@ -1,4 +1,3 @@
-import ast
 import copy
 import io
 import json
@@ -6,11 +5,9 @@ import tarfile
 import tempfile
 
 import boto3
-from django.http import FileResponse
 from jinja2 import Template
 from rest_framework import generics, status
 from rest_framework.exceptions import ParseError
-from rest_framework.parsers import FileUploadParser
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 
@@ -18,6 +15,9 @@ from apps.applications.models import Application
 from apps.job_scripts.models import JobScript
 from apps.job_scripts.serializers import JobScriptSerializer
 from jobbergate_api.settings import S3_BUCKET
+
+
+# from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
 class CustomDjangoModelPermission(DjangoModelPermissions):
@@ -38,7 +38,7 @@ class JobScriptListView(generics.ListCreateAPIView):
 
     def post(self, request, format=None):
         data = request.data
-        parser_class = (FileUploadParser,)
+        # parser_class = (FileUploadParser,)  # FIXME - why was this here?
         if "upload_file" not in request.data:
             raise ParseError("Empty content")
         param_file = data["upload_file"].read()
