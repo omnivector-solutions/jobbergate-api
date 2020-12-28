@@ -1,6 +1,6 @@
 minVersion: "0.12.0"
 github:
-  owner: omnivector-solutions
+  owner: corydodt
   repo: jobbergate-api
 releaseBranchPrefix: release
 changelog: CHANGELOG.md
