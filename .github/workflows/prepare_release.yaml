@@ -54,7 +54,7 @@ jobs:
 
       - name: "tar it up"
         run: |
-          git ls-tree --name-only -z \
+          git ls-tree --name-only -z HEAD \
             | tar --transform 's,^,${{ env.RELEASE_PREFIX }}/,' --null -T- -cvz -f ${{ env.RELEASE_PREFIX }}.tar.gz
 
       - name: "Parse and store git_sha, release_version"
