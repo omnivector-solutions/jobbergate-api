@@ -5,7 +5,6 @@ import tarfile
 
 import boto3
 from rest_framework import generics, status
-from rest_framework.parsers import FileUploadParser
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 import yaml
@@ -13,6 +12,9 @@ import yaml
 from apps.applications.models import Application
 from apps.applications.serializers import ApplicationSerializer
 from jobbergate_api.settings import APPLICATION_FILE, CONFIG_FILE, S3_BUCKET, TAR_NAME
+
+
+# from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
 class CustomDjangoModelPermission(DjangoModelPermissions):
@@ -68,7 +70,7 @@ class ApplicationListView(generics.ListCreateAPIView):
 
     def post(self, request, format=None):
         data = request.data
-        parser_class = (FileUploadParser,)
+        # parser_class = (FileUploadParser,)  # FIXME - why was this here? (does nothing)
         if "upload_file" in request.data:
             tar_file, tar_extract, data = get_application(data)
             serializer = ApplicationSerializer(data=data)
@@ -121,7 +123,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         # write over /tmp/jobbergate/jobbergate.py
         os.remove(APPLICATION_FILE)
         wr_application_file = open(APPLICATION_FILE, "w")
-        af = wr_application_file.write(data["application_file"])
+        wr_application_file.write(data["application_file"])
         wr_application_file.close()
 
         if data["application_config"] != application.application_config:
@@ -134,7 +136,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         # write over /tmp/jobbergate/jobbergate.yaml
         os.remove(CONFIG_FILE)
         wr_config_file = open(CONFIG_FILE, "w")
-        cf = wr_config_file.write(data["application_config"])
+        wr_config_file.write(data["application_config"])
         wr_config_file.close()
 
         serializer = ApplicationSerializer(instance=application, data=data)

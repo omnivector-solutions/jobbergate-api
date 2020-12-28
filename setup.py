@@ -34,6 +34,7 @@ setup(
             "isort",
             "pytest",
             "pytest-cov",
+            "pytest-django",
             "tox",
             "wheel",
         ],

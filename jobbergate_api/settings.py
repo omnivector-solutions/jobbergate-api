@@ -15,7 +15,9 @@ REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
 # OPTIONAL environment variables
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 IS_OFFLINE = os.getenv("LAMBDA_TASK_ROOT") is None  # the serverless runtime sets this
-JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv("JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", "").split()
+JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv(
+    "JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", ""
+).split()
 
 
 # settings when running locally (no serverless runtime)
