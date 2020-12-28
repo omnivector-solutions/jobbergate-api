@@ -2,7 +2,7 @@ minVersion: "0.12.0"
 github:
   owner: omnivector-solutions
   repo: jobbergate-api
-releaseBranchPrefix: release-v
+releaseBranchPrefix: release
 changelog: CHANGELOG.md
 changelogPolicy: auto
 statusProvider:

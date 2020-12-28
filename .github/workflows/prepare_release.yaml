@@ -16,7 +16,7 @@ jobs:
       - id: set-version
         run: |
           echo 'RELEASE_VERSION=${{ github.event.inputs.version }}' >> $GITHUB_ENV;
-          echo 'GITHUB_TOKEN=${{ secrets.MY_GITHUB_TOKEN }}' >> $GITHUB_ENV;
+          echo 'GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}' >> $GITHUB_ENV;
 
       - id: set-git-user
         run: |
