@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - id: set-version
+      - id: set-env
         run: |
           echo 'RELEASE_VERSION=${{ github.event.inputs.version }}' >> $GITHUB_ENV;
           echo 'GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}' >> $GITHUB_ENV;
