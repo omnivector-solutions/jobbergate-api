@@ -1,3 +1,4 @@
+# DEPRECATED - this file is no longer being maintained, make changes in SSM parameters or env.yaml
 ---
 APPLICATION_LOCATION_BASE_PATH: ${ssm:/jobbergate-api/production/APPLICATION_LOCATION_BASE_PATH}
 REGISTER_VERIFICATION_URL: ${ssm:/jobbergate-api/production/REGISTER_VERIFICATION_URL}
