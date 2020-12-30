@@ -20,6 +20,7 @@ PARAM_KEYS = (
     "DATABASE_NAME",
     "DATABASE_USER",
     "DATABASE_PASS",
+    "JOBBERGATE_SECRET_KEY",
     "REGISTER_VERIFICATION_URL",
     "SENTRY_DSN",
 )
@@ -33,6 +34,7 @@ PARAM_TEMPLATE = inspect.cleandoc(
     DATABASE_PASS = {DATABASE_PASS!a}
     DATABASE_USER = {DATABASE_USER!a}
     REGISTER_VERIFICATION_URL = {REGISTER_VERIFICATION_URL!a}
+    JOBBERGATE_SECRET_KEY = {JOBBERGATE_SECRET_KEY!a}
     SENTRY_DSN = {SENTRY_DSN!a}
     """
 )
@@ -58,6 +60,7 @@ def read_upstream(client, stage):
         DATABASE_NAME="jobbergate",
         DATABASE_USER="omnivector",
         DATABASE_PASS=make_password(),
+        JOBBERGATE_SECRET_KEY=make_password(),
     )
 
     prefix = f"/jobbergate-api/{stage}"
