@@ -10,12 +10,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVERLESS_STAGE = os.environ["SERVERLESS_STAGE"]
 SERVERLESS_REGION = os.environ["SERVERLESS_REGION"]
 REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
+SECRET_KEY = os.environ["JOBBERGATE_SECRET_KEY"]
 
 
 # OPTIONAL environment variables
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 IS_OFFLINE = os.getenv("LAMBDA_TASK_ROOT") is None  # the serverless runtime sets this
-JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv("JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", "").split()
+JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv(
+    "JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", ""
+).split()
 
 
 # settings when running locally (no serverless runtime)
@@ -71,12 +74,6 @@ TAR_NAME = "/tmp/jobbergate/jobbergate.tar.gz"
 APPLICATION_FILE = "/tmp/jobbergate/jobbergate.py"
 
 CONFIG_FILE = "/tmp/jobbergate/jobbergate.yaml"
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "z%bhg09ma4_h^ps0&bxizvkis0vj0^1rwhs!c0)2f6_^8c#dbt"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

@@ -1,10 +1,12 @@
 from setuptools import find_packages, setup
 
 
+__version__ = "0.1.0+dev"
+
 setup(
     name="jobbergate-api",
     packages=find_packages(include=["jobbergate_api", "jobbergate_api.*"]),
-    version="0.1.0+dev",
+    version=__version__,
     license="MIT",
     long_description=open("README.md").read(),
     install_requires=[
@@ -34,6 +36,7 @@ setup(
             "isort",
             "pytest",
             "pytest-cov",
+            "pytest-django",
             "tox",
             "wheel",
         ],
