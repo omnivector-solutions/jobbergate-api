@@ -1,6 +1,7 @@
 var vpcData = {
+    vpcId: "vpc-9653c9ee",
+    auroraClusterCidrIp: "172.31.0.0/16",
     public: {
-        vpcId: "vpc-9653c9ee",
         securityGroupIds: ["sg-cfac3d95"],
         subnetIds: [
             "subnet-02bc060304e2d7916",
@@ -9,10 +10,8 @@ var vpcData = {
             "subnet-0d4605c10612b0cdb"
         ],
         albScheme: "internet-facing",
-        auroraClusterCidrIp: "172.31.0.0/16"
     },
     internal: {
-        vpcId: "vpc-9653c9ee",
         securityGroupIds: ["sg-cfac3d95"],
         subnetIds: [
             "subnet-02bc060304e2d7916",
@@ -21,21 +20,24 @@ var vpcData = {
             "subnet-0d4605c10612b0cdb"
         ],
         albScheme: "internal",
-        auroraClusterCidrIp: "172.31.0.0/16"
-    }
+    },
+    alb: undefined // set below, based on the name of the stage
 };
 
 
 module.exports = (serverless) => {
     switch (serverless.service.provider.stage) {
         case "prod":
-            return vpcData.public;
+            vpcData.alb = vpcData.public;
+            return vpcData;
         case "staging":
-            return vpcData.public;
+            vpcData.alb = vpcData.public;
+            return vpcData;
         case "edge":
-            return vpcData.internal;
+            vpcData.alb = vpcData.internal;
+            return vpcData;
         default:
-            return vpcData.internal;
+            vpcData.alb = vpcData.internal;
+            return vpcData;
     }
 };
-

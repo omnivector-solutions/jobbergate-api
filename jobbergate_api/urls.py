@@ -39,6 +39,7 @@ urlpatterns = [
     url(
         r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
     ),
+    url(r"^healthcheck/", include("health_check.urls")),
     path("admin/", admin.site.urls),
     path("", include("apps.job_scripts.urls")),
     path("", include("apps.job_submissions.urls")),

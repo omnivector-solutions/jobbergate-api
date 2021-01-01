@@ -4,7 +4,6 @@ import json
 import tarfile
 import tempfile
 
-import boto3
 from jinja2 import Template
 from rest_framework import generics, status
 from rest_framework.exceptions import ParseError
@@ -14,6 +13,7 @@ from rest_framework.response import Response
 from apps.applications.models import Application
 from apps.job_scripts.models import JobScript
 from apps.job_scripts.serializers import JobScriptSerializer
+from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import S3_BUCKET
 
 
@@ -34,7 +34,7 @@ class JobScriptListView(generics.ListCreateAPIView):
     queryset = JobScript.objects.all()
     serializer_class = JobScriptSerializer
     permission_classes = [CustomDjangoModelPermission]
-    client = boto3.client("s3")
+    client = make_s3_client(S3_BUCKET)
 
     def post(self, request, format=None):
         data = request.data

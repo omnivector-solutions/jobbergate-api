@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -67,7 +68,6 @@ if SENTRY_DSN:
 
 
 S3_BUCKET = f"jobbergate-api-{SERVERLESS_STAGE}-{SERVERLESS_REGION}-resources"
-
 S3_BASE_PATH = "jobbergate-resources"
 
 TAR_NAME = "/tmp/jobbergate/jobbergate.tar.gz"
@@ -100,6 +100,8 @@ INSTALLED_APPS = [  # Warning: The order that these get loaded matters, don't re
     "apps.job_scripts",
     "apps.job_submissions",
     "apps.applications",
+    "health_check",
+    "health_check.db",
 ]
 
 AUTHENTICATION_BACKENDS = (  # Warning: The order that these get loaded matters, don't reorder
@@ -207,7 +209,6 @@ REST_REGISTRATION = {
     "REGISTER_EMAIL_VERIFICATION_ENABLED": False,
     "VERIFICATION_FROM_EMAIL": "info@omnivector.solutions",
     "REGISTER_VERIFICATION_URL": REGISTER_VERIFICATION_URL,
-
     "RESET_PASSWORD_VERIFICATION_ENABLED": True,
     "SEND_RESET_PASSWORD_LINK_SERIALIZER_USE_EMAIL": True,
     "RESET_PASSWORD_VERIFICATION_URL": RESET_PASSWORD_VERIFICATION_URL,
@@ -215,3 +216,23 @@ REST_REGISTRATION = {
 
 
 EMAIL_BACKEND = "django_ses.SESBackend"
+
+
+# HEALTH_CHECK =  # defaults
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}

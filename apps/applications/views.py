@@ -3,7 +3,6 @@ import io
 import os
 import tarfile
 
-import boto3
 from rest_framework import generics, status
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
@@ -11,6 +10,7 @@ import yaml
 
 from apps.applications.models import Application
 from apps.applications.serializers import ApplicationSerializer
+from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import APPLICATION_FILE, CONFIG_FILE, S3_BUCKET, TAR_NAME
 
 
@@ -61,7 +61,7 @@ class ApplicationListView(generics.ListCreateAPIView):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     permission_classes = [CustomDjangoModelPermission]
-    client = boto3.client("s3")
+    client = make_s3_client(S3_BUCKET)
 
     def delete(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
@@ -97,7 +97,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ApplicationSerializer
     permission_classes = [CustomDjangoModelPermission]
     queryset = Application.objects.all()
-    client = boto3.client("s3")
+    client = make_s3_client(S3_BUCKET)
 
     def put(self, request, pk, format=None):
         application = Application.objects.get(id=pk)
