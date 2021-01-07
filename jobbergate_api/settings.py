@@ -221,6 +221,7 @@ EMAIL_BACKEND = "django_ses.SESBackend"
 # HEALTH_CHECK =  # defaults
 
 
+# change default logging to write everything to stdout so cloudwatch can see it
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

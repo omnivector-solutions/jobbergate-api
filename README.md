@@ -139,9 +139,14 @@ $ ./manage.py shell
 
 1. Migrate the application files from an old s3 bucket to a new one:
 
-   `aws s3 sync` the applications from the `jobbergate-api-***-resources` s3 bucket.
+   `npx serverless remove ..` will not remove the s3 bucket, but it will also
+   not attempt to restore it in the new instance, so we're doing it by hand.
 
-   `npx serverless remove ..` will not remove the s3 bucket, but it will not attempt to restore it in the new instance.
+   - `aws s3 sync` the applications from the `jobbergate-api-***-resources`
+     (old) bucket to a local directory.
+
+   - `aws s3 sync` the applications from the local directory to the
+     `jobbergate-api-***-resources` (new) bucket.
 
 
 ### Tip: Fast upgrade of the npx serverless function
