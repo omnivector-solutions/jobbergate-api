@@ -112,6 +112,53 @@ $ ./manage.py shell
 ```
 
 ---
+## Management (Ops)
+
+### Instance migration/redeployment
+
+1. Do a deployment to the new stage/region, following the steps above.
+
+1. Save the database, and restore it in a new database:
+
+    ```#!bash
+    # to dump to a local file (use old stage and region)
+
+    eval $(scripts/serverlessenv.py <stage> --region <region>)
+    pg_dump -c $DATABASE_URI > jobbergate-api-$SERVERLESS_STAGE-$SERVERLESS_REGION.pgsql
+    ```
+
+    ```#!bash
+    # to restore (use new stage and region)
+
+    eval $(scripts/serverlessenv.py <stage> --region <region>)
+    psql $DATABASE_URI < jobbergate-api-<old stage>-<old region>.pgsql
+    ./manage.py migrate
+    ```
+
+    Remember, `npx serverless remove` will **DESTROY** the database!
+
+1. Migrate the application files from an old s3 bucket to a new one:
+
+   `npx serverless remove ..` will not remove the s3 bucket, but it will also
+   not attempt to restore it in the new instance, so we're doing it by hand.
+
+   - `aws s3 sync` the applications from the `jobbergate-api-***-resources`
+     (old) bucket to a local directory.
+
+   - `aws s3 sync` the applications from the local directory to the
+     `jobbergate-api-***-resources` (new) bucket.
+
+
+### Tip: Fast upgrade of the npx serverless function
+
+- To upgrade the code of an instance without affecting the underlying resources:
+
+    ```#!bash
+    eval $(scripts/serverlessenv.py <stage> --region <region>)
+    npx serverless deploy function --stage <stage> --region <region> --function api
+    ```
+
+---
 
 ## API
 

@@ -29,6 +29,10 @@ provider:
         - ses:*
       Resource:
         - "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "arn:aws:s3:::${self:service}-${self:provider.stage}-${self:provider.region}-resources/*"
 
 package:
   exclude:
@@ -62,16 +66,22 @@ custom:
   s3ResourcesBucket: "${self:service}-${self:provider.stage}-${self:provider.region}-resources"
   s3LocalPath: "static/"
 
+  vpc: ${file(./include/${self:provider.region}/vpc.js)}
+
 
 functions:
   api:
     handler: wsgi_handler.handler
+    package: {}  # workaround for https://github.com/UnitedIncome/serverless-python-requirements/issues/414
     layers:
       - { Ref: PythonRequirementsLambdaLayer }
 
     memorySize: 512
     timeout: 60
-    vpc: ${file(./include/${self:provider.region}/vpc.js)}
+    vpc:
+      vpcId: "${self:custom.vpc.vpcId}"
+      securityGroupIds: ${self:custom.vpc.internal.securityGroupIds}
+      subnetIds: ${self:custom.vpc.internal.subnetIds}
 
 
 resources:
@@ -81,10 +91,10 @@ resources:
       Properties:
         Name: ${self:service}-${self:provider.stage}-alb
         SecurityGroups:
-          ${self:functions.api.vpc.securityGroupIds}
-        Scheme: ${self:functions.api.vpc.albScheme}
+          ${self:custom.vpc.alb.securityGroupIds}
+        Scheme: ${self:custom.vpc.alb.albScheme}
         Subnets:  # IGW subnets for production, else security partner VPN
-          ${self:functions.api.vpc.subnetIds}
+          ${self:custom.vpc.alb.subnetIds}
 
     APIHTTPListener:
       Type: AWS::ElasticLoadBalancingV2::Listener
@@ -145,7 +155,7 @@ resources:
             Value: true
         HealthCheckEnabled: true
         HealthCheckIntervalSeconds: 300
-        HealthCheckPath: /healthcheck
+        HealthCheckPath: /healthcheck/
 
     APIInvokePermission:
       Type: AWS::Lambda::Permission
@@ -189,13 +199,7 @@ resources:
             - Sid: PutGetObject
               Effect: Allow
               Principal:
-                AWS:
-                  Fn::Join:
-                    - ""
-                    - - "arn:aws:iam::212021838531:role/jobbergate-api-"
-                      - "${self:provider.stage}-"
-                      - "${self:provider.region}-"
-                      - "lambdaRole"
+                AWS: "arn:aws:iam::212021838531:role/jobbergate-api-${self:provider.stage}-${self:provider.region}-lambdaRole"
               Action:
                 - s3:PutObject
                 - s3:GetObject
@@ -225,18 +229,18 @@ resources:
         DBSubnetGroupName: aurora-${self:service}-${self:provider.stage}-dbsg
         DBSubnetGroupDescription: Aurora SubnetGroup
         SubnetIds:
-          ${self:functions.api.vpc.subnetIds}
+          ${self:custom.vpc.internal.subnetIds}
 
     AuroraClusterSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: "Allow ingress from our vpc subnet cidrs on 5432."
-        VpcId: ${self:functions.api.vpc.vpcId}
+        VpcId: ${self:custom.vpc.vpcId}
         SecurityGroupIngress:
           - IpProtocol: tcp
             FromPort: 5432
             ToPort: 5432
-            CidrIp: ${self:functions.api.vpc.auroraClusterCidrIp}
+            CidrIp: ${self:custom.vpc.auroraClusterCidrIp}
 
     AuroraInstance:
       Type: AWS::RDS::DBInstance

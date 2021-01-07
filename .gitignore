@@ -21,3 +21,4 @@ wsgi_handler.py
 /*.code-workspace
 /.coverage
 /_virtual_tmp
+/scratch/

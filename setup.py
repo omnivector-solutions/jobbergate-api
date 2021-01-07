@@ -16,6 +16,7 @@ setup(
         "django",
         "django-cors-headers",
         "django-guardian",
+        "django-health-check",
         "django-rest-registration",
         "django-ses",
         "djangorestframework",
