@@ -1,0 +1,133 @@
+# acceptance test suite for releasing a new version of jobbergate-api
+
+[hacenada]
+name = "Jobbergate API Acceptance Test"
+description = """
+Tests to confirm a functioning release of jobbergate-api
+
+To release, complete all steps, with no serious bugs to report.
+
+Report all bugs in pivotal.
+"""
+
+[[step]]
+type="description"
+message = """
+Please enter a label for this release cycle, e.g. "0.9.0"
+"""
+stop = false
+
+[[step]]
+message = """
+If you have not already done so,
+Create a testable release branch, using the "Prepare release" action.
+"""
+
+[[step]]
+message = "Check out the branch you just created"
+
+[[step]]
+message = """
+Deploy jobbergate-api using either the README or `deploy-jobbergate.toml`.
+
+You should use
+
+- The branch you just created (checked out locally)
+- --region=eu-north-1
+- --stage=test-0-9-0  (for example, if you are testing version 0.9.0)
+"""
+stop = false
+
+[[step]]
+message = """
+Deploy jobbergate-web using either the README of jobbergate-web, or `deploy-jobbergate.toml`
+"""
+
+[[step]]
+message = """
+Make sure you have also done the migrate.py and createsuperuser steps.
+"""
+
+[[step]]
+message = """
+Visit https://jobbergate-api-test-x-x-x-eu-north-1.omnivector.solutions/admin/
+
+Does the CSS display?
+"""
+stop = false
+
+[[step]]
+message = "Can you log in as a superuser?"
+
+[[step]]
+message = """
+Visit https://test-x-x-x-eu-north-1.jobbergate.io
+
+Does the CSS display?
+"""
+stop = false
+
+[[step]]
+message = "Open the developer tools console in your browser."
+
+[[step]]
+message = """
+Can you log in as the same superuser?
+
+No errors in the console?
+"""
+
+[[step]]
+message = """
+Can you see the list of applications? (Might be empty)
+
+No errors in the console?
+"""
+
+[[step]]
+message = "sudo snap install jobbergate-cli  # (latest release)"
+
+[[step]]
+message = "Untar jobbergate_api/test/sample-application.tar.gz"
+
+
+[[step]]
+message = """
+export JOBBERGATE_API_ENDPOINT=https://jobbergate-api-x-x-x-eu-north-1.omnivector.solutions
+
+jobbergate create-application
+"""
+
+
+[[step]]
+message = """
+jobbergate list-applications
+
+confirm the one you just created is there
+"""
+
+[[step]]
+message = """
+Make a change to the sample application files.
+
+jobbergate update-application
+
+jobbergate get-application
+
+Confirm the fetched application contains the changes.
+"""
+
+[[step]]
+message = """
+TBD:
+job-script
+job-submission
+"""
+
+
+[[step]]
+message = """
+Congratulations, if tests above have passed, jobbergate-api is ready to release!
+
+Use the "Publish release" github action on this releae branch.
+"""

@@ -1,0 +1,96 @@
+[hacenada]
+name = "Deploy Jobbergate"
+description = "Deploy Jobbergate to a stage and region"
+
+[[step]]
+label = "description"
+type = "description"
+message = """
+Let's get started deploying jobbergate
+
+Please enter a description for this operation, such as "Deploying v0.2 to eu-north-1 staging"
+"""
+stop = false
+
+[[step]]
+message = """
+Before we get started, please gather the following:
+
+- REGISTER_VERIFICATION_URL
+- SENTRY_DSN
+- What kind of deployment is this to be? (production, staging, developer-facing)
+
+Have you gathered all that?
+"""
+repeat-if = false
+
+[[step]]
+message = """
+In the jobbergate-api repo directory:
+
+$ scripts/ssmparameters.py <stage> --region <region>
+"""
+
+[[step]]
+message = "in jobbergate-api, run `npx serverless deploy --stage <stage> --region <region>"
+stop = false
+
+[[step]]
+message = """
+While npx serverless deploy is running:
+
+- Visit https://<region>.console.aws.amazon.com/acm/home?region=<region>#/
+- Find your cert (it may take a few minutes to appear)
+- Expand the domain entry, under your cert
+- Click "Create Record in Route 53"
+
+If this is not a new deploy (you have previously used the API hostname), you will not
+have to do this again.
+"""
+
+[[step]]
+message = """
+In a shell session, run `eval $(scripts/serverlessenv.py <stage> --region <region>)`
+"""
+stop = false
+
+[[step]]
+message = """
+Connect your openvpn now!
+"""
+stop = false
+
+[[step]]
+message = """
+./manage.py migrate
+./manage.py createsuperuser
+# (use your email address and generate a new password)
+./manage.py collectstatic
+npx serverless syncToS3 --stage <stage> --region <region>
+"""
+
+[[step]]
+message = """
+Double-check by going to https://jobbergate-api-<stage>-<region>.omnivector.solutions/admin/
+
+Make sure the page loads with CSS
+"""
+
+[[step]]
+message = """
+Now we're in the jobbergate-web repo directory.
+
+create stage/<region>/<stage>/serverless.yml if you are doing a new developer-facing deployment
+"""
+
+[[step]]
+message = """
+cd stage/<region>/<stage>
+npx serverless
+"""
+
+[[step]]
+message = """
+Final check. Log in to https://<stage>.jobbergate.io/ and
+make sure the application list and application save/load works.
+"""
