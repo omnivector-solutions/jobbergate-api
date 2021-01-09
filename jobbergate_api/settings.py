@@ -111,7 +111,7 @@ AUTHENTICATION_BACKENDS = (  # Warning: The order that these get loaded matters,
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.omnivector\.solutions$",
-    r"^https://.*\.jobbergate\.io$",
+    r"^https://(.*\.)?jobbergate\.io$",
 ] + JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES
 
 MIDDLEWARE = [  # Warning: The order that these get loaded matters, don't reorder
