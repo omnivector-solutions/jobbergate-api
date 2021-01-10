@@ -1,3 +1,7 @@
+## 0.9.1
+
+- No documented changes.
+
 ## 0.9.0
 
 - First officially-labeled release of Jobbergate-API.
