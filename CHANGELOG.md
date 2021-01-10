@@ -1,3 +1,7 @@
+## 0.9.1
+
+- Fix: Allow CORS for apex URL, https://jobbergate.io
+
 ## 0.9.0
 
 - First officially-labeled release of Jobbergate-API.
