@@ -17,6 +17,9 @@ from jobbergate_api.settings import APPLICATION_FILE, CONFIG_FILE, S3_BUCKET, TA
 # from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
+TEMP_DIR = "/tmp/jobbergate"
+
+
 class CustomDjangoModelPermission(DjangoModelPermissions):
     def __init__(self):
         self.perms_map = copy.deepcopy(self.perms_map)  # from EunChong's answer
@@ -44,13 +47,26 @@ def get_application(data):
     return tar_file, tar_extract, data
 
 
-def tardir(path, tar_name, tar_list):
+def tardir(path, tar_name) -> tarfile.TarFile:
+    """
+    Create a tar file for the contents of the directory at ``path''
+
+    Returns the closed TarFile after writing the contents
+    """
     archive = tarfile.open(tar_name, "w|gz")
-    for root, dirs, files in os.walk(path):
-        if root in tar_list:
-            for file in files:
-                archive.add(os.path.join(root, file), arcname=file)
+    archive.add(path, recursive=True, filter=root_fix)
     archive.close()
+    return archive
+
+
+def root_fix(tarinfo):
+    """
+    Clean the root of the tarinfo to remove the tempdir prefix
+    """
+    temp_dir = TEMP_DIR.lstrip("/")
+    assert tarinfo.name.startswith(temp_dir), f"data to tar up can only be in {TEMP_DIR} (was /{tarinfo.name})"
+    tarinfo.name = tarinfo.name[len(TEMP_DIR):]
+    return tarinfo
 
 
 class ApplicationListView(generics.ListCreateAPIView):
@@ -69,6 +85,9 @@ class ApplicationListView(generics.ListCreateAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def post(self, request, format=None):
+        """
+        Endpoint for "create application"
+        """
         data = request.data
         # parser_class = (FileUploadParser,)  # FIXME - why was this here? (does nothing)
         if "upload_file" in request.data:
@@ -100,6 +119,9 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     client = make_s3_client(S3_BUCKET)
 
     def put(self, request, pk, format=None):
+        """
+        Endpoint for "update application"
+        """
         application = Application.objects.get(id=pk)
         obj = self.client.get_object(
             Bucket=S3_BUCKET, Key=application.application_location
@@ -109,10 +131,10 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
 
         # extract all to /tmp/jobbergate and will overwite if changes
         try:
-            os.mkdir("/tmp/jobbergate")
+            os.mkdir(TEMP_DIR)
         except FileExistsError:
             pass
-        tar_extract.extractall(path="/tmp/jobbergate")
+        tar_extract.extractall(path=TEMP_DIR)
 
         data = request.data
 
@@ -145,9 +167,8 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
             # if file or config changed then upload to s3 and overwrite at existing s3 key
             if file_change or config_change:
-                tar_list = ["/tmp/jobbergate", "/tmp/jobbergate/templates"]
                 # dir to tar now has new jobbergate .py and .yaml
-                tardir(path="/tmp/jobbergate", tar_name=TAR_NAME, tar_list=tar_list)
+                tardir(path=TEMP_DIR, tar_name=TAR_NAME)
                 self.client.put_object(
                     Body=open(TAR_NAME, "rb"),
                     Bucket=S3_BUCKET,
