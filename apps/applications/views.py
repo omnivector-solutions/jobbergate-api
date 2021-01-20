@@ -64,8 +64,11 @@ def root_fix(tarinfo):
     Clean the root of the tarinfo to remove the tempdir prefix
     """
     temp_dir = TEMP_DIR.lstrip("/")
-    assert tarinfo.name.startswith(temp_dir), f"data to tar up can only be in {TEMP_DIR} (was /{tarinfo.name})"
-    tarinfo.name = tarinfo.name[len(TEMP_DIR):]
+    assert tarinfo.name.startswith(
+        temp_dir
+    ), f"data to tar up can only be in {TEMP_DIR} (was /{tarinfo.name})"
+    temp_dir_length = len(TEMP_DIR)
+    tarinfo.name = tarinfo.name[temp_dir_length:]
     return tarinfo
 
 
