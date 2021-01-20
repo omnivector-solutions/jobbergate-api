@@ -19,7 +19,7 @@ class ASCIIRegexValidator:
                 "This password contains disallowed characters: only a-zA-Z0-9 are allowed"
             )
 
-    def get_help_text(self):
+    def get_help_text(self) -> str:
         return _(
             "Your password must contain only letters a-z (or A-Z) and digits (0-9)"
         )
