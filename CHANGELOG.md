@@ -1,3 +1,8 @@
+## 0.10.0
+
+- Fix: "templates" folder structure is retained after an update-application operation (#176044390)
+- Added: You can now restrict legal domains for email registration, using JOBBERGATE_VALID_EMAIL_DOMAINS (#176081242)
+
 ## 0.9.1
 
 - Fix: Allow CORS for apex URL, https://jobbergate.io
