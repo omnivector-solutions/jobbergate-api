@@ -34,7 +34,7 @@ def test_tardir(application_files_dir: pathlib.Path):
     Do we preserve a tar directory structure as we're packaging?
     """
     app = application_files_dir / "app"
-    with patch('apps.applications.views.TEMP_DIR', str(app)):
+    with patch("apps.applications.views.TEMP_DIR", str(app)):
         tf = applications_views.tardir(
             path=str(app),
             tar_name=str(application_files_dir / "test.tar.gz"),

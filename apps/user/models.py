@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from jobbergate_api import username_validation
+
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -43,7 +45,9 @@ class User(AbstractUser):
     """User model."""
 
     username = None
-    email = models.EmailField(_("email address"), unique=True)
+    email = models.EmailField(
+        _("email address"), unique=True, validators=[username_validation.validate_email]
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

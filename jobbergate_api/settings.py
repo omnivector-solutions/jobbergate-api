@@ -21,6 +21,10 @@ IS_OFFLINE = os.getenv("LAMBDA_TASK_ROOT") is None  # the serverless runtime set
 JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES = os.getenv(
     "JOBBERGATE_CORS_ALLOWED_ORIGIN_REGEXES", ""
 ).split()
+_DEFAULT_VALID_EMAIL_DOMAINS = "scania.com omnivector.solutions"
+JOBBERGATE_VALID_EMAIL_DOMAINS = os.getenv(
+    "JOBBERGATE_CUSTOM_VALID_EMAIL_DOMAINS", _DEFAULT_VALID_EMAIL_DOMAINS
+)
 
 
 # settings when running locally (no serverless runtime)
