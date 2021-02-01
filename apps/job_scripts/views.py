@@ -80,7 +80,10 @@ class JobScriptListView(generics.ListCreateAPIView):
             if member.name in supporting_files:
                 match = [x for x in support_files_ouput if member.name in x]
                 contentfobj = tar.extractfile(member)
-                filename = support_files_ouput[match[0]][0]
+                filename = support_files_ouput[match]
+                # List format safeguard
+                if isinstance(filename, list):
+                    filename = filename[0]
                 template_files[filename] = contentfobj.read().decode("utf-8")
 
         # Use tempfile to generate .tar in memory - NOT write to disk
