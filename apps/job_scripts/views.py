@@ -80,7 +80,7 @@ class JobScriptListView(generics.ListCreateAPIView):
             if member.name in supporting_files:
                 match = [x for x in support_files_ouput if member.name in x]
                 contentfobj = tar.extractfile(member)
-                filename = support_files_ouput[match]
+                filename = support_files_ouput[match[0]]
                 # List format safeguard
                 if isinstance(filename, list):
                     filename = filename[0]
