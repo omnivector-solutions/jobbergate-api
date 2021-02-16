@@ -26,7 +26,7 @@ setup(
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
-        "tomlkit",
+        "toml",
         "werkzeug",  # soft-required by the serverless lambda
     ],
     extras_require={

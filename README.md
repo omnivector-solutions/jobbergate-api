@@ -46,6 +46,7 @@ tracking jobs and registering applications is performed here.
 1. Using serverless + cloudformation, deploy your instance to AWS:
 
     ```bash
+    npm i
     npx serverless deploy --stage your_name  # with --region if necessary
     ```
 
