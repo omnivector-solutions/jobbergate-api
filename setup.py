@@ -19,6 +19,8 @@ setup(
         "django-health-check",
         "django-rest-registration",
         "django-ses",
+        # enable this to replace `npx serverless syncToS3`
+        # # "django-storages",
         "djangorestframework",
         "djangorestframework-jwt",
         "drf_yasg",

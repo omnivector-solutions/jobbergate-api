@@ -56,6 +56,10 @@ else:  # serverless runtime
 
     STATIC_URL = "https://{}/".format(os.environ["CLOUDFRONT_DOMAIN"])
 
+    # enable these to replace `npx serverless syncToS3`
+    # # STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    # # AWS_STORAGE_BUCKET_NAME = os.environ[""]
+
 
 if SENTRY_DSN:
     import sentry_sdk  # noqa
