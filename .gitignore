@@ -22,3 +22,5 @@ wsgi_handler.py
 /.coverage
 /_virtual_tmp
 /scratch/
+/_lambda_tmp
+/function.zip

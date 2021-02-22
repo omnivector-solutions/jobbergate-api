@@ -36,3 +36,10 @@ requirements/requirements.txt: setup.py
 		&& pip install . \
 		&& pip freeze | grep -v jobbergate-api > requirements/requirements.txt
 	rm -rf _virtual_tmp
+
+
+function.zip:
+	rm -f $@
+	pip install -q --target _lambda_tmp .
+	cd _lambda_tmp && zip -q ../function.zip -r . -x '*.pyc'
+	rm -rf _lambda_tmp
