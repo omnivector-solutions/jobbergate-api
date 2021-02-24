@@ -5,7 +5,7 @@ __version__ = "0.10.0+dev"
 
 setup(
     name="jobbergate-api",
-    packages=find_packages(include=["jobbergate_api", "jobbergate_api.*"]),
+    packages=find_packages(include=["jobbergate_api", "jobbergate_api.*", "apps", "apps.*"]),
     version=__version__,
     license="MIT",
     long_description=open("README.md").read(),
@@ -19,8 +19,7 @@ setup(
         "django-health-check",
         "django-rest-registration",
         "django-ses",
-        # enable this to replace `npx serverless syncToS3`
-        # # "django-storages",
+        "django-storages",
         "djangorestframework",
         "djangorestframework-jwt",
         "drf_yasg",

@@ -39,7 +39,7 @@ requirements/requirements.txt: setup.py
 
 
 function.zip:
-	rm -f $@
-	pip install -q --target _lambda_tmp .
+	rm -rf $@ _lambda_tmp
+	pip install -q --target _lambda_tmp wheel pip .
 	cd _lambda_tmp && zip -q ../function.zip -r . -x '*.pyc'
 	rm -rf _lambda_tmp

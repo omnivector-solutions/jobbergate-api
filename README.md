@@ -78,9 +78,8 @@ eval $(./scripts/serverlessenv.py your_name)  # important: add --region eu-north
                                               # you want the default us-west-2!
 
 
-# Publish static files to the cloud
+# Publish static files to the s3 bucket
 ./manage.py collectstatic --noinput
-npx serverless syncToS3 --stage your_name  # with --region if necessary
 
 # Prepare schema migration:
 ./manage.py migrate
@@ -125,7 +124,7 @@ $ ./manage.py shell
     # to dump to a local file (use old stage and region)
 
     eval $(scripts/serverlessenv.py <stage> --region <region>)
-    pg_dump -c $DATABASE_URI > jobbergate-api-$SERVERLESS_STAGE-$SERVERLESS_REGION.pgsql
+    pg_dump -c $DATABASE_URI > jobbergate-api-$FUNCTION_STAGE-$FUNCTION_REGION.pgsql
     ```
 
     ```#!bash

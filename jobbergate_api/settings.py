@@ -8,8 +8,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # REQUIRED environment variables
-SERVERLESS_STAGE = os.environ["SERVERLESS_STAGE"]
-SERVERLESS_REGION = os.environ["SERVERLESS_REGION"]
+FUNCTION_STAGE = os.environ["FUNCTION_STAGE"]
+FUNCTION_REGION = os.environ["FUNCTION_REGION"]
 REGISTER_VERIFICATION_URL = os.environ["REGISTER_VERIFICATION_URL"]
 SECRET_KEY = os.environ["JOBBERGATE_SECRET_KEY"]
 RESET_PASSWORD_VERIFICATION_URL = os.environ["RESET_PASSWORD_VERIFICATION_URL"]
@@ -54,11 +54,11 @@ else:  # serverless runtime
         }
     }
 
-    STATIC_URL = "https://{}/".format(os.environ["CLOUDFRONT_DOMAIN"])
+    STATIC_URL = f"https://{os.environ['CLOUDFRONT_DOMAIN']}/"
 
     # enable these to replace `npx serverless syncToS3`
-    # # STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    # # AWS_STORAGE_BUCKET_NAME = os.environ[""]
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_STORAGE_BUCKET_NAME = os.environ["JOBBERGATE_STATIC_BUCKET"]
 
 
 if SENTRY_DSN:
@@ -75,7 +75,7 @@ if SENTRY_DSN:
     )
 
 
-S3_BUCKET = f"jobbergate-api-{SERVERLESS_STAGE}-{SERVERLESS_REGION}-resources"
+S3_BUCKET = f"jobbergate-api-{FUNCTION_STAGE}-{FUNCTION_REGION}-resources"
 S3_BASE_PATH = "jobbergate-resources"
 
 TAR_NAME = "/tmp/jobbergate/jobbergate.tar.gz"
