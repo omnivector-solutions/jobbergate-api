@@ -29,9 +29,8 @@ def inject_sbatch_params(job_script_data_as_string, sbatch_params):
     for parameter in sbatch_params.split():
         inner_string += "#SBATCH " + parameter + "\\n"
 
-    new_job_script_data_as_string = (job_script_data_as_string[:line_end] +
-                                     inner_string +
-                                     job_script_data_as_string[line_end:])
+    new_job_script_data_as_string = (
+        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:])
     return new_job_script_data_as_string
 
 
