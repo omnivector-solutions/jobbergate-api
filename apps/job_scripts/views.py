@@ -20,6 +20,20 @@ from jobbergate_api.settings import S3_BUCKET
 # from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
+def inject_sbatch_params(job_script_data_as_string, sbatch_params):
+    first_sbatch_index = job_script_data_as_string.find("#SBATCH")
+    string_slice = job_script_data_as_string[first_sbatch_index:]
+    line_end = string_slice.find("\n") + first_sbatch_index + 1
+
+    inner_string = ""
+    for parameter in sbatch_params.split():
+        inner_string += "#SBATCH " + parameter + "\\n"
+
+    new_job_script_data_as_string = (
+        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:])
+    return new_job_script_data_as_string
+
+
 class CustomDjangoModelPermission(DjangoModelPermissions):
     def __init__(self):
         self.perms_map = copy.deepcopy(self.perms_map)  # from EunChong's answer
@@ -41,6 +55,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         # parser_class = (FileUploadParser,)  # FIXME - why was this here?
         if "upload_file" not in request.data:
             raise ParseError("Empty content")
+        sbatch_params = data.get("sbatch_params")
         param_file = data["upload_file"].read()
         dict_str = param_file.decode("UTF-8")
         # param_dict = ast.literal_eval(dict_str)
@@ -105,7 +120,12 @@ class JobScriptListView(generics.ListCreateAPIView):
             job_script_data_as_string
             template_files[key] = rendered_js
 
-        data["job_script_data_as_string"] = json.dumps(template_files)
+        job_script_data_as_string = json.dumps(template_files)
+
+        if sbatch_params:
+            job_script_data_as_string = inject_sbatch_params(job_script_data_as_string, sbatch_params)
+
+        data["job_script_data_as_string"] = job_script_data_as_string
 
         serializer = JobScriptSerializer(data=data)
 
