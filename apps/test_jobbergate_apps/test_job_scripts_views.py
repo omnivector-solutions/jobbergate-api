@@ -1,3 +1,7 @@
+"""
+Tests of the job_scripts view
+"""
+import json
 import pytest
 
 from apps.job_scripts.views import inject_sbatch_params
@@ -28,9 +32,15 @@ def new_job_script_data_as_string():
 
 @pytest.fixture
 def sbatch_params():
+    """
+    String content of the argument --sbatch-params
+    """
     return "--comment=some_comment --nice=-1"
 
 
 def test_inject_sbatch_params(job_script_data_as_string, sbatch_params, new_job_script_data_as_string):
+    """
+    Test the injection of sbatch params in a default application script
+    """
     injected_string = inject_sbatch_params(job_script_data_as_string, sbatch_params)
     assert injected_string == new_job_script_data_as_string

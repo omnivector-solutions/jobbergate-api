@@ -20,7 +20,10 @@ from jobbergate_api.settings import S3_BUCKET
 # from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
-def inject_sbatch_params(job_script_data_as_string, sbatch_params):
+def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: str) -> str:
+    """
+    Given the job script as job_script_data_as_string, inject the sbatch params in the correct location
+    """
     first_sbatch_index = job_script_data_as_string.find("#SBATCH")
     string_slice = job_script_data_as_string[first_sbatch_index:]
     line_end = string_slice.find("\n") + first_sbatch_index + 1
@@ -51,6 +54,9 @@ class JobScriptListView(generics.ListCreateAPIView):
     client = make_s3_client(S3_BUCKET)
 
     def post(self, request, format=None):
+        """
+        Endpoint used to create a job script and by the jobbergate create-job-script
+        """
         data = request.data
         # parser_class = (FileUploadParser,)  # FIXME - why was this here?
         if "upload_file" not in request.data:
@@ -134,6 +140,9 @@ class JobScriptListView(generics.ListCreateAPIView):
             return Response(serializer.data)
 
     def delete(self, request, JobScript_pk, format=None):
+        """
+        Endpoint used to delete a job script and by the jobbergate delete-job-script
+        """
         jobscript = JobScript.objects.get(id=JobScript_pk)
         jobscript.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
