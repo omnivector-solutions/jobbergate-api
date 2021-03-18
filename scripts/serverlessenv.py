@@ -47,9 +47,7 @@ def get_cloudformation_environmentals(stage):
     key:value of each variable from the cloudformation stack outputs that we need
     """
     client = boto3.client("cloudformation")
-    outputs = client.describe_stacks(StackName=STACK_NAME.format(**locals()))["Stacks"][
-        0
-    ]["Outputs"]
+    outputs = client.describe_stacks(StackName=STACK_NAME.format(**locals()))["Stacks"][0]["Outputs"]
     environmentals = {}
     for o in outputs:
         k = o["OutputKey"]

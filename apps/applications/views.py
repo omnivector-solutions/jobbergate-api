@@ -64,9 +64,7 @@ def root_fix(tarinfo):
     Clean the root of the tarinfo to remove the tempdir prefix
     """
     temp_dir = TEMP_DIR.lstrip("/")
-    assert tarinfo.name.startswith(
-        temp_dir
-    ), f"data to tar up can only be in {TEMP_DIR} (was /{tarinfo.name})"
+    assert tarinfo.name.startswith(temp_dir), f"data to tar up can only be in {TEMP_DIR} (was /{tarinfo.name})"
     temp_dir_length = len(TEMP_DIR)
     tarinfo.name = tarinfo.name[temp_dir_length:]
     return tarinfo
@@ -126,9 +124,7 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
         Endpoint for "update application"
         """
         application = Application.objects.get(id=pk)
-        obj = self.client.get_object(
-            Bucket=S3_BUCKET, Key=application.application_location
-        )
+        obj = self.client.get_object(Bucket=S3_BUCKET, Key=application.application_location)
         buf = io.BytesIO(obj["Body"].read())
         tar_extract = tarfile.open(fileobj=buf)
 

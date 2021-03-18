@@ -2,8 +2,9 @@
 Tests of the job_scripts view
 """
 import json
-import pytest
 from textwrap import dedent
+
+import pytest
 
 from apps.job_scripts.views import inject_sbatch_params
 
@@ -13,8 +14,10 @@ def job_script_data_as_string():
     """
     Example of a default application script
     """
-    content = json.dumps({"application.sh":
-                          dedent("""\
+    content = json.dumps(
+        {
+            "application.sh": dedent(
+                """\
                             #!/bin/bash
 
                             #SBATCH --job-name=rats
@@ -23,7 +26,10 @@ def job_script_data_as_string():
 
 
                             echo $SLURM_TASKS_PER_NODE
-                            echo $SLURM_SUBMIT_DIR""")})
+                            echo $SLURM_SUBMIT_DIR"""
+            )
+        }
+    )
     return content
 
 
@@ -32,8 +38,10 @@ def new_job_script_data_as_string():
     """
     Example of an application script after the injection of the sbatch params
     """
-    content = json.dumps({"application.sh":
-                          dedent("""\
+    content = json.dumps(
+        {
+            "application.sh": dedent(
+                """\
                             #!/bin/bash
 
                             #SBATCH --comment=some_comment
@@ -44,7 +52,10 @@ def new_job_script_data_as_string():
 
 
                             echo $SLURM_TASKS_PER_NODE
-                            echo $SLURM_SUBMIT_DIR""")})
+                            echo $SLURM_SUBMIT_DIR"""
+            )
+        }
+    )
     return content
 
 

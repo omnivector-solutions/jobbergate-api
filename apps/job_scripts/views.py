@@ -17,8 +17,6 @@ from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import S3_BUCKET
 
 
-
-
 def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: str) -> str:
     """
     Given the job script as job_script_data_as_string, inject the sbatch params in the correct location
@@ -32,7 +30,8 @@ def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: str) -> 
         inner_string += "#SBATCH " + parameter + "\\n"
 
     new_job_script_data_as_string = (
-        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:])
+        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:]
+    )
     return new_job_script_data_as_string
 
 
@@ -72,9 +71,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         application_id = data["application"]
 
         application = Application.objects.get(id=application_id)
-        obj = self.client.get_object(
-            Bucket=S3_BUCKET, Key=application.application_location
-        )
+        obj = self.client.get_object(Bucket=S3_BUCKET, Key=application.application_location)
         buf = io.BytesIO(obj["Body"].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}

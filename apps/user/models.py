@@ -45,9 +45,7 @@ class User(AbstractUser):
     """User model."""
 
     username = None
-    email = models.EmailField(
-        _("email address"), unique=True, validators=[username_validation.validate_email]
-    )
+    email = models.EmailField(_("email address"), unique=True, validators=[username_validation.validate_email])
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
