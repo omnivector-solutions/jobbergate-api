@@ -17,7 +17,6 @@ from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import S3_BUCKET
 
 
-# from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
 
 
 def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: str) -> str:
