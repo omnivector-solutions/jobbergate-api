@@ -15,9 +15,7 @@ class JobScript(models.Model):
 
     job_script_data_as_string = models.TextField()
 
-    job_script_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    job_script_owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     application = models.ForeignKey(
         Application,

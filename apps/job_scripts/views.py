@@ -17,10 +17,10 @@ from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import S3_BUCKET
 
 
-# from rest_framework.parsers import FileUploadParser  # FIXME - why was this here?
-
-
-def inject_sbatch_params(job_script_data_as_string, sbatch_params):
+def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: str) -> str:
+    """
+    Given the job script as job_script_data_as_string, inject the sbatch params in the correct location
+    """
     first_sbatch_index = job_script_data_as_string.find("#SBATCH")
     string_slice = job_script_data_as_string[first_sbatch_index:]
     line_end = string_slice.find("\n") + first_sbatch_index + 1
@@ -30,7 +30,8 @@ def inject_sbatch_params(job_script_data_as_string, sbatch_params):
         inner_string += "#SBATCH " + parameter + "\\n"
 
     new_job_script_data_as_string = (
-        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:])
+        job_script_data_as_string[:line_end] + inner_string + job_script_data_as_string[line_end:]
+    )
     return new_job_script_data_as_string
 
 
@@ -51,6 +52,9 @@ class JobScriptListView(generics.ListCreateAPIView):
     client = make_s3_client(S3_BUCKET)
 
     def post(self, request, format=None):
+        """
+        Endpoint used to create a job script and by the jobbergate create-job-script
+        """
         data = request.data
         # parser_class = (FileUploadParser,)  # FIXME - why was this here?
         if "upload_file" not in request.data:
@@ -67,9 +71,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         application_id = data["application"]
 
         application = Application.objects.get(id=application_id)
-        obj = self.client.get_object(
-            Bucket=S3_BUCKET, Key=application.application_location
-        )
+        obj = self.client.get_object(Bucket=S3_BUCKET, Key=application.application_location)
         buf = io.BytesIO(obj["Body"].read())
         tar = tarfile.open(fileobj=buf)
         template_files = {}
@@ -134,6 +136,9 @@ class JobScriptListView(generics.ListCreateAPIView):
             return Response(serializer.data)
 
     def delete(self, request, JobScript_pk, format=None):
+        """
+        Endpoint used to delete a job script and by the jobbergate delete-job-script
+        """
         jobscript = JobScript.objects.get(id=JobScript_pk)
         jobscript.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

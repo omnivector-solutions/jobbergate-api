@@ -17,9 +17,7 @@ class JobSubmission(models.Model):
         max_length=255,
     )
 
-    job_submission_owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
-    )
+    job_submission_owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     job_script = models.ForeignKey(
         JobScript,
