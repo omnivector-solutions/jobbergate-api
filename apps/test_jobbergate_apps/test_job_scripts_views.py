@@ -46,6 +46,7 @@ def new_job_script_data_as_string():
 
                             #SBATCH --comment=some_comment
                             #SBATCH --nice=-1
+                            #SBATCH -N 10
                             #SBATCH --job-name=rats
                             #SBATCH --partition=debug
                             #SBATCH --output=sample-%j.out
@@ -64,7 +65,7 @@ def sbatch_params():
     """
     String content of the argument --sbatch-params
     """
-    return "--comment=some_comment --nice=-1"
+    return ("--comment=some_comment", "--nice=-1", "-N 10")
 
 
 def test_inject_sbatch_params(job_script_data_as_string, sbatch_params, new_job_script_data_as_string):
