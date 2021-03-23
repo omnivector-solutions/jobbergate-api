@@ -3,6 +3,7 @@ import io
 import json
 import tarfile
 import tempfile
+from typing import Tuple
 
 from jinja2 import Template
 from rest_framework import generics, status
@@ -17,7 +18,7 @@ from jobbergate_api.botolib import make_s3_client
 from jobbergate_api.settings import S3_BUCKET
 
 
-def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: tuple) -> str:
+def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: Tuple[str]) -> str:
     """
     Given the job script as job_script_data_as_string, inject the sbatch params in the correct location
     """
