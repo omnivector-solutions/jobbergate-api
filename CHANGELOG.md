@@ -1,3 +1,7 @@
+## 0.11.0
+
+- No documented changes.
+
 ## 0.10.0
 
 - Fix: "templates" folder structure is retained after an update-application operation (#176044390)
