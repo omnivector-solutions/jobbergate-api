@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-__version__ = "0.10.0+dev"
+__version__ = "0.11.0"
 
 setup(
     name="jobbergate-api",
@@ -13,7 +13,7 @@ setup(
         "boto3",
         "click",
         "codado",
-        "django",
+        "django<=3.1.8",
         "django-cors-headers",
         "django-guardian",
         "django-health-check",
