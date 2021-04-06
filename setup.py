@@ -13,7 +13,7 @@ setup(
         "boto3",
         "click",
         "codado",
-        "django",
+        "django<=3.1.8",
         "django-cors-headers",
         "django-guardian",
         "django-health-check",
