@@ -36,6 +36,16 @@ def inject_sbatch_params(job_script_data_as_string: str, sbatch_params: Tuple[st
     return new_job_script_data_as_string
 
 
+def extract_sbatch_params(data):
+    size = data.get("sbatch_params_len")
+    if not size:
+        return None
+    sbatch_params = []
+    for i in range(int(size)):
+        sbatch_params.append(data.get("sbatch_params_" + str(i)))
+    return sbatch_params
+
+
 class CustomDjangoModelPermission(DjangoModelPermissions):
     def __init__(self):
         self.perms_map = copy.deepcopy(self.perms_map)  # from EunChong's answer
@@ -60,7 +70,7 @@ class JobScriptListView(generics.ListCreateAPIView):
         # parser_class = (FileUploadParser,)  # FIXME - why was this here?
         if "upload_file" not in request.data:
             raise ParseError("Empty content")
-        sbatch_params = data.get("sbatch_params")
+        sbatch_params = extract_sbatch_params(data)
         param_file = data["upload_file"].read()
         dict_str = param_file.decode("UTF-8")
         # param_dict = ast.literal_eval(dict_str)

@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import pytest
 
-from apps.job_scripts.views import inject_sbatch_params
+from apps.job_scripts.views import extract_sbatch_params, inject_sbatch_params
 
 
 @pytest.fixture
@@ -74,3 +74,25 @@ def test_inject_sbatch_params(job_script_data_as_string, sbatch_params, new_job_
     """
     injected_string = inject_sbatch_params(job_script_data_as_string, sbatch_params)
     assert injected_string == new_job_script_data_as_string
+
+
+def test_extract_sbatch_params():
+    """
+    Test the extraction of the params from a dict
+    """
+    data = {"sbatch_params_0": "foo", "sbatch_params_1": "bar", "sbatch_params_len": "2"}
+    params = extract_sbatch_params(data)
+
+    assert len(params) == 2
+    assert params[0] == "foo"
+    assert params[1] == "bar"
+
+
+def test_extract_sbatch_params_empty():
+    """
+    Test the extraction of the params from a dict without params
+    """
+    data = {"foo": "bar"}
+    params = extract_sbatch_params(data)
+
+    assert params is None

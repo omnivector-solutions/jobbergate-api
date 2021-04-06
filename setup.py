@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 
-__version__ = "0.11.0"
+__version__ = "0.11.1"
 
 setup(
     name="jobbergate-api",
@@ -23,6 +23,7 @@ setup(
         "djangorestframework-jwt",
         "drf_yasg",
         "jinja2",
+        "idna==2.10",
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
