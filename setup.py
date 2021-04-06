@@ -23,6 +23,7 @@ setup(
         "djangorestframework-jwt",
         "drf_yasg",
         "jinja2",
+        "idna==2.10",
         "psycopg2-binary",
         "pyyaml",
         "sentry-sdk",
