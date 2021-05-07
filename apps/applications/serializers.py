@@ -14,6 +14,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "application_owner",
             "application_file",
             "application_config",
+            "application_identifier",
             "created_at",
             "updated_at",
         ]
