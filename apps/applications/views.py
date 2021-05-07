@@ -80,8 +80,90 @@ class ApplicationListView(generics.ListCreateAPIView):
     permission_classes = [CustomDjangoModelPermission]
     client = make_s3_client(S3_BUCKET)
 
-    def delete(self, request, pk, format=None):
-        application = Application.objects.get(id=pk)
+    def put(self, request, format=None):
+        """
+        Endpoint for "update application" when using identifier
+        """
+        application_identifier = request.query_params.get("identifier")
+        if application_identifier:
+            application = Application.objects.filter(application_identifier=application_identifier).first()
+            if not application:
+                return Response("Application not found", 404)
+        obj = self.client.get_object(Bucket=S3_BUCKET, Key=application.application_location)
+        buf = io.BytesIO(obj["Body"].read())
+        tar_extract = tarfile.open(fileobj=buf)
+
+        # extract all to /tmp/jobbergate and will overwite if changes
+        try:
+            os.mkdir(TEMP_DIR)
+        except FileExistsError:
+            pass
+        tar_extract.extractall(path=TEMP_DIR)
+
+        data = request.data
+
+        if data["application_file"] != application.application_file:
+            file_change = True
+        else:
+            file_change = False
+        # write over /tmp/jobbergate/jobbergate.py
+        os.remove(APPLICATION_FILE)
+        wr_application_file = open(APPLICATION_FILE, "w")
+        wr_application_file.write(data["application_file"])
+        wr_application_file.close()
+
+        if data["application_config"] != application.application_config:
+            config_change = True
+        else:
+            # This is for if ONLY _file is updated because the
+            # data submitted wont have ['application_config']
+            config_change = False
+
+        # write over /tmp/jobbergate/jobbergate.yaml
+        os.remove(CONFIG_FILE)
+        wr_config_file = open(CONFIG_FILE, "w")
+        wr_config_file.write(data["application_config"])
+        wr_config_file.close()
+
+        serializer = ApplicationSerializer(instance=application, data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            # if file or config changed then upload to s3 and overwrite at existing s3 key
+            if file_change or config_change:
+                # dir to tar now has new jobbergate .py and .yaml
+                tardir(path=TEMP_DIR, tar_name=TAR_NAME)
+                self.client.put_object(
+                    Body=open(TAR_NAME, "rb"),
+                    Bucket=S3_BUCKET,
+                    Key=application.application_location,
+                )
+
+            return Response(serializer.data)
+
+    def list(self, request):
+        application_identifier = request.query_params.get("identifier")
+        if application_identifier:
+            application = Application.objects.filter(application_identifier=application_identifier).first()
+            if not application:
+                return Response("Application not found", 404)
+            return Response(ApplicationSerializer(application).data, 200)
+        else:
+            queryset = self.get_queryset()
+            serializer = ApplicationSerializer(queryset, many=True)
+            return Response(serializer.data)
+
+    def delete(self, request, pk=None, format=None):
+        application_identifier = request.query_params.get("identifier")
+        if application_identifier:
+            application = Application.objects.filter(application_identifier=application_identifier).first()
+            if not application:
+                return Response("Application not found", 404)
+        else:
+            application = Application.objects.filter(id=pk).first()
+            if not application:
+                return Response("Application not found", 404)
+
         application.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -90,7 +172,8 @@ class ApplicationListView(generics.ListCreateAPIView):
         Endpoint for "create application"
         """
         data = request.data
-        # parser_class = (FileUploadParser,)  # FIXME - why was this here? (does nothing)
+        if Application.objects.filter(application_identifier=data.get("application_identifier")):
+            return Response("application_idenfier already exists", 409)
         if "upload_file" in request.data:
             tar_file, tar_extract, data = get_application(data)
             serializer = ApplicationSerializer(data=data)
@@ -119,11 +202,13 @@ class ApplicationView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Application.objects.all()
     client = make_s3_client(S3_BUCKET)
 
-    def put(self, request, pk, format=None):
+    def put(self, request, pk=None, format=None):
         """
         Endpoint for "update application"
         """
-        application = Application.objects.get(id=pk)
+        application = Application.objects.filter(id=pk).first()
+        if not application:
+            return Response("Application not found", 404)
         obj = self.client.get_object(Bucket=S3_BUCKET, Key=application.application_location)
         buf = io.BytesIO(obj["Body"].read())
         tar_extract = tarfile.open(fileobj=buf)

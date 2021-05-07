@@ -33,6 +33,7 @@ class Application(models.Model):
         auto_now=True,
         editable=False,
     )
+    application_identifier = models.CharField(unique=True, max_length=255, null=True)
 
     class Meta:
         verbose_name = "application"
@@ -40,7 +41,7 @@ class Application(models.Model):
         db_table = "applications"
 
     def __str__(self):
-        return self.application_name
+        return self.application_identifier
 
     @property
     def application_location(self):
